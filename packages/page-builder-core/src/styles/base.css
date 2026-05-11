@@ -1,0 +1,42 @@
+/**
+ * page-builder-core — CSS custom property defaults
+ *
+ * Import this file if you want the built-in default theme.
+ * Every variable can be overridden in your own stylesheet or on :root.
+ *
+ * Usage:
+ *   import "page-builder-core/styles";
+ *
+ * Or override per-instance by setting vars on the [data-pb-root] element:
+ *   [data-pb-root] { --pb-accent: #6200ea; }
+ */
+
+:root {
+  /* Brand / accent */
+  --pb-accent:        #0078d4;
+  --pb-accent-light:  #e8f2fb;
+
+  /* Surfaces */
+  --pb-surface:       #ffffff;
+  --pb-canvas-bg:     transparent;
+
+  /* Borders */
+  --pb-border:        #e0e0e0;
+
+  /* Text */
+  --pb-text:          #222222;
+  --pb-text-muted:    #888888;
+  --pb-text-subtle:   #aaaaaa;
+
+  /* Shape */
+  --pb-radius:        10px;
+  --pb-radius-sm:     6px;
+
+  /* Shadow */
+  --pb-shadow:        0 8px 24px rgba(0, 0, 0, 0.14);
+}
+
+/* Optional: smooth hover transitions for built-in controls */
+[data-pb-root] * {
+  box-sizing: border-box;
+}

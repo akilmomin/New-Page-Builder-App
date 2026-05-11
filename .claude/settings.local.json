@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"c:\\\\workspace\\\\Projects\\\\New Page Builder App\\\\src\" -Recurse)",
+      "Bash(Select-Object FullName)",
+      "Bash(Sort-Object FullName)",
+      "Bash(Get-Content \"C:\\\\Users\\\\akilm\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--workspace-Projects-New-Page-Builder-App\\\\24fb769c-1d6c-41d8-89b4-848f1bdd2c02\\\\tasks\\\\bc6jl0m0f.output\")",
+      "Bash(mkdir -p \"c:/workspace/Projects/New Page Builder App/src/models\" \"c:/workspace/Projects/New Page Builder App/src/utils\" \"c:/workspace/Projects/New Page Builder App/src/components/Layout/GridLayout\" \"c:/workspace/Projects/New Page Builder App/src/components/PageBuilder/NodeRenderer\")",
+      "Bash(Get-ChildItem -Recurse \"c:\\\\workspace\\\\Projects\\\\New Page Builder App\\\\packages\\\\page-builder-core\\\\src\" -Include \"*.ts\",\"*.tsx\")",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(pnpm type-check *)",
+      "Bash(pnpm typecheck *)",
+      "Bash(pnpm install *)",
+      "Bash(mv 'c:/workspace/Projects/New Page Builder App/packages/page-builder-core/src/components/GridLayout/component/GridLayout.tsx' 'c:/workspace/Projects/New Page Builder App/packages/page-builder-core/src/components/GridLayout/GridLayout.tsx')",
+      "Bash(mv 'c:/workspace/Projects/New Page Builder App/packages/page-builder-core/src/components/PageBuilder/ComponentPicker/component/ComponentPicker.tsx' 'c:/workspace/Projects/New Page Builder App/packages/page-builder-core/src/components/PageBuilder/ComponentPicker/ComponentPicker.tsx')",
+      "Bash(mv 'c:/workspace/Projects/New Page Builder App/packages/page-builder-core/src/components/PageBuilder/LayoutPicker/component/LayoutPicker.tsx' 'c:/workspace/Projects/New Page Builder App/packages/page-builder-core/src/components/PageBuilder/LayoutPicker/LayoutPicker.tsx')",
+      "Bash(mv 'c:/workspace/Projects/New Page Builder App/packages/page-builder-core/src/components/PageBuilder/NodeRenderer/component/NodeRenderer.tsx' 'c:/workspace/Projects/New Page Builder App/packages/page-builder-core/src/components/PageBuilder/NodeRenderer/NodeRenderer.tsx')",
+      "Bash(mv 'c:/workspace/Projects/New Page Builder App/packages/page-builder-core/src/components/PageBuilder/PageBuilder/component/PageBuilder.tsx' 'c:/workspace/Projects/New Page Builder App/packages/page-builder-core/src/components/PageBuilder/PageBuilder/PageBuilder.tsx')",
+      "Bash(npx tsc *)"
+    ],
+    "additionalDirectories": [
+      "c:\\workspace\\Projects\\New Page Builder App\\src"
+    ]
+  }
+}
