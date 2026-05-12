@@ -12,8 +12,7 @@ export const ComponentPicker: React.FC<ComponentPickerProps> = ({
   onClose,
   className = "",
 }) => {
-  const { query, setQuery, grouped, hoveredTile, setHoveredTile } =
-    useComponentPicker(components);
+  const { query, setQuery, grouped, hoveredTile, setHoveredTile } = useComponentPicker(components);
 
   return (
     <div
@@ -27,7 +26,9 @@ export const ComponentPicker: React.FC<ComponentPickerProps> = ({
       <div style={panelStyle}>
         <div style={headerStyle}>
           <span style={{ fontWeight: 600, fontSize: 13 }}>Add Component</span>
-          <button style={closeButtonStyle} onClick={onClose} aria-label="Close">✕</button>
+          <button style={closeButtonStyle} onClick={onClose} aria-label="Close">
+            ✕
+          </button>
         </div>
 
         {components.length > 5 && (
@@ -45,9 +46,7 @@ export const ComponentPicker: React.FC<ComponentPickerProps> = ({
         <div style={{ overflowY: "auto", maxHeight: 360 }}>
           {Object.entries(grouped).map(([category, items]) => (
             <div key={category} style={{ marginBottom: 12 }}>
-              {Object.keys(grouped).length > 1 && (
-                <p style={categoryLabelStyle}>{category}</p>
-              )}
+              {Object.keys(grouped).length > 1 && <p style={categoryLabelStyle}>{category}</p>}
               <div style={gridStyle}>
                 {items.map((def) => (
                   <ComponentTile
@@ -66,7 +65,14 @@ export const ComponentPicker: React.FC<ComponentPickerProps> = ({
           ))}
 
           {Object.keys(grouped).length === 0 && (
-            <p style={{ fontSize: 12, color: "var(--pb-text-muted, #888)", textAlign: "center", padding: "20px 0" }}>
+            <p
+              style={{
+                fontSize: 12,
+                color: "var(--pb-text-muted, #888)",
+                textAlign: "center",
+                padding: "20px 0",
+              }}
+            >
               No components match your search.
             </p>
           )}
@@ -99,7 +105,15 @@ const ComponentTile: React.FC<ComponentTileProps> = ({ def, hovered, onHover, on
         {def.icon}
       </span>
     )}
-    <span style={{ fontSize: 11, fontWeight: 500, color: "var(--pb-text, #333)", textAlign: "center", lineHeight: 1.3 }}>
+    <span
+      style={{
+        fontSize: 11,
+        fontWeight: 500,
+        color: "var(--pb-text, #333)",
+        textAlign: "center",
+        lineHeight: 1.3,
+      }}
+    >
       {def.label}
     </span>
   </button>
@@ -108,22 +122,78 @@ const ComponentTile: React.FC<ComponentTileProps> = ({ def, hovered, onHover, on
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const pickerWrapStyle: React.CSSProperties = { position: "relative", zIndex: 9999 };
-const backdropStyle: React.CSSProperties   = { position: "fixed", inset: 0, background: "transparent" };
-const panelStyle: React.CSSProperties = {
-  position: "absolute", top: "calc(100% + 6px)", left: "50%", transform: "translateX(-50%)",
-  background: "var(--pb-surface, #fff)", border: "1px solid var(--pb-border, #e0e0e0)",
-  borderRadius: "var(--pb-radius, 10px)", boxShadow: "var(--pb-shadow, 0 8px 24px rgba(0,0,0,0.14))",
-  padding: 16, minWidth: 280, maxWidth: 400, width: "max-content", zIndex: 1,
+const backdropStyle: React.CSSProperties = {
+  position: "fixed",
+  inset: 0,
+  background: "transparent",
 };
-const headerStyle: React.CSSProperties      = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 };
-const closeButtonStyle: React.CSSProperties = { background: "none", border: "none", cursor: "pointer", fontSize: 16, color: "var(--pb-text-muted, #888)", lineHeight: 1, padding: "2px 4px" };
-const searchStyle: React.CSSProperties      = { width: "100%", padding: "6px 10px", fontSize: 12, border: "1px solid var(--pb-border, #e0e0e0)", borderRadius: "var(--pb-radius-sm, 6px)", marginBottom: 10, outline: "none", boxSizing: "border-box" };
-const categoryLabelStyle: React.CSSProperties = { fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--pb-text-subtle, #aaa)", marginBottom: 6 };
-const gridStyle: React.CSSProperties        = { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(72px, 1fr))", gap: 8 };
+const panelStyle: React.CSSProperties = {
+  position: "absolute",
+  top: "calc(100% + 6px)",
+  left: "50%",
+  transform: "translateX(-50%)",
+  background: "var(--pb-surface, #fff)",
+  border: "1px solid var(--pb-border, #e0e0e0)",
+  borderRadius: "var(--pb-radius, 10px)",
+  boxShadow: "var(--pb-shadow, 0 8px 24px rgba(0,0,0,0.14))",
+  padding: 16,
+  minWidth: 280,
+  maxWidth: 400,
+  width: "max-content",
+  zIndex: 1,
+};
+const headerStyle: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: 10,
+};
+const closeButtonStyle: React.CSSProperties = {
+  background: "none",
+  border: "none",
+  cursor: "pointer",
+  fontSize: 16,
+  color: "var(--pb-text-muted, #888)",
+  lineHeight: 1,
+  padding: "2px 4px",
+};
+const searchStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "6px 10px",
+  fontSize: 12,
+  border: "1px solid var(--pb-border, #e0e0e0)",
+  borderRadius: "var(--pb-radius-sm, 6px)",
+  marginBottom: 10,
+  outline: "none",
+  boxSizing: "border-box",
+};
+const categoryLabelStyle: React.CSSProperties = {
+  fontSize: 10,
+  fontWeight: 700,
+  textTransform: "uppercase",
+  letterSpacing: "0.06em",
+  color: "var(--pb-text-subtle, #aaa)",
+  marginBottom: 6,
+};
+const gridStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fill, minmax(72px, 1fr))",
+  gap: 8,
+};
 const tileStyle: React.CSSProperties = {
-  display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-  padding: "10px 6px", background: "var(--pb-surface, #fff)", border: "1px solid var(--pb-border, #e0e0e0)",
-  borderRadius: "var(--pb-radius-sm, 6px)", cursor: "pointer", transition: "border-color 0.15s, background 0.15s", minHeight: 72,
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: "10px 6px",
+  background: "var(--pb-surface, #fff)",
+  borderWidth: "1px",
+  borderStyle: "solid",
+  borderColor: "var(--pb-border, #e0e0e0)",
+  borderRadius: "var(--pb-radius-sm, 6px)",
+  cursor: "pointer",
+  transition: "border-color 0.15s, background 0.15s",
+  minHeight: 72,
 };
 const tileHoverStyle: React.CSSProperties = {
   borderColor: "var(--pb-accent, #0078d4)",

@@ -23,7 +23,7 @@ export const GridLayout: React.FC<GridLayoutProps> = ({
     >
       {columns.map(({ colIndex, items }) => {
         const span = columnSpans?.[colIndex] ?? Math.floor(12 / Math.max(columns.length, 1));
-        const pct  = spanToPercent(span);
+        const pct = spanToPercent(span);
 
         return (
           <div
@@ -38,7 +38,7 @@ export const GridLayout: React.FC<GridLayoutProps> = ({
           >
             {items.map((item) => (
               <div key={item.Id} data-pb-grid-item={item.Id} style={{ width: "100%" }}>
-                {item.renderAttribute?.()}
+                {item.renderComponent?.()}
               </div>
             ))}
           </div>

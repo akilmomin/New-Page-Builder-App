@@ -30,31 +30,31 @@ export interface ComponentDefinition<P = any> {
 // ─── Layout Presets ───────────────────────────────────────────────────────────
 
 export const LAYOUT_PRESETS = {
-  single:    [12]       as const,
-  double:    [6, 6]     as const,
-  triple:    [4, 4, 4]  as const,
-  leftWide:  [8, 4]     as const,
-  rightWide: [4, 8]     as const,
+  single: [12] as const,
+  double: [6, 6] as const,
+  triple: [4, 4, 4] as const,
+  leftWide: [8, 4] as const,
+  rightWide: [4, 8] as const,
 } as const;
 
 export type LayoutPresetKey = keyof typeof LAYOUT_PRESETS;
-export type LayoutPreset    = (typeof LAYOUT_PRESETS)[LayoutPresetKey];
+export type LayoutPreset = (typeof LAYOUT_PRESETS)[LayoutPresetKey];
 
 // ─── Grid Column Descriptor ───────────────────────────────────────────────────
 
 export interface GridColumn {
-  readonly node:   PageNode;
+  readonly node: PageNode;
   readonly mdSize: number;
   readonly smSize: number;
-  readonly index:  number;
+  readonly index: number;
 }
 
 // ─── Render-prop Slot Types ───────────────────────────────────────────────────
 
 export interface ToolbarRenderProps {
-  isEditMode:       boolean;
+  isEditMode: boolean;
   onToggleEditMode: () => void;
-  onReset:          () => void;
+  onReset: () => void;
 }
 
 export interface AddTriggerRenderProps {
@@ -62,47 +62,59 @@ export interface AddTriggerRenderProps {
 }
 
 export interface LayoutPickerRenderProps {
-  presets:        typeof LAYOUT_PRESETS;
+  presets: typeof LAYOUT_PRESETS;
   onSelectLayout: (columns: readonly number[]) => void;
-  onClose:        () => void;
+  onClose: () => void;
 }
 
 export interface ComponentPickerRenderProps {
-  components:        ComponentDefinition[];
+  components: ComponentDefinition[];
   onSelectComponent: (name: string) => void;
-  onClose:           () => void;
+  onClose: () => void;
 }
 
 export interface SectionControlsRenderProps {
-  nodeId:   string;
-  onClone:  () => void;
+  nodeId: string;
+  onClone: () => void;
   onDelete: () => void;
 }
 
 export interface ComponentControlsRenderProps {
-  nodeId:   string;
-  onClone:  () => void;
+  nodeId: string;
+  onClone: () => void;
   onDelete: () => void;
 }
 
-// ─── ILayoutData (Cosine-style data-driven grid) ──────────────────────────────
+// ─── ILayoutData (public data-driven grid format) ────────────────────────────
 
 export interface ILayoutData {
-  /** Zero-based column index determining which column this item belongs to. */
-  ColumnIndex:      number;
-  /** Sort order within the column (lower = higher). Defaults to 0. */
-  VerticalIndex?:   number;
   /** Unique identifier for this layout item. */
-  Id:               string;
+  Id: string;
+  /** Groups items into a row/section. Items with the same SectionId form one row. */
+  SectionId: string;
+  /** Zero-based column position within the section. */
+  ColumnIndex: number;
+  /** Width on a 12-col grid (e.g. 8 for 2/3). Defaults to equal distribution. */
+  ColumnSpan?: number;
+  /** Stack order within the column (lower renders first). Defaults to 0. */
+  VerticalIndex?: number;
+  /** Registry key for the component to render. Empty string = empty slot (not serialized). */
+  ComponentName: string;
   /** Optional persona / variant tag. */
-  CorePersona?:     string;
+  CorePersona?: string;
   /** JSON-encoded extra metadata (e.g. `{ "order": 2 }`). */
-  StateData?:       string;
-  /** Renders the actual content for this slot. */
-  renderAttribute?: () => React.ReactElement;
+  StateData?: string;
+  /**
+   * Runtime render override — called instead of the registry component.
+   * NEVER serialized; stripped automatically by onChange / serializeLayout.
+   */
+  renderComponent?: () => React.ReactElement;
 }
+
+/** Serializable subset of ILayoutData — safe to JSON.stringify and send to a server. */
+export type SerializableLayoutItem = Omit<ILayoutData, "renderComponent">;
 
 export interface IGridItem {
   colIndex: number;
-  items:    ILayoutData[];
+  items: ILayoutData[];
 }

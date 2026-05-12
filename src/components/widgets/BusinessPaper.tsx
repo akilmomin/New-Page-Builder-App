@@ -15,11 +15,41 @@ interface BusinessPaperProps {
 }
 
 const PAPERS: readonly PaperItem[] = [
-  { id: 1, title: "Strategic Planning Framework 2026", category: "Strategy", date: "07 May 2026", url: "/#" },
-  { id: 2, title: "Digital Transformation Whitepaper", category: "Technology", date: "05 May 2026", url: "/#" },
-  { id: 3, title: "Risk Management Policy Update", category: "Compliance", date: "03 May 2026", url: "/#" },
-  { id: 4, title: "Customer Experience Research Report", category: "Research", date: "30 Apr 2026", url: "/#" },
-  { id: 5, title: "Supply Chain Optimisation Guide", category: "Operations", date: "27 Apr 2026", url: "/#" },
+  {
+    id: 1,
+    title: "Strategic Planning Framework 2026",
+    category: "Strategy",
+    date: "07 May 2026",
+    url: "/#",
+  },
+  {
+    id: 2,
+    title: "Digital Transformation Whitepaper",
+    category: "Technology",
+    date: "05 May 2026",
+    url: "/#",
+  },
+  {
+    id: 3,
+    title: "Risk Management Policy Update",
+    category: "Compliance",
+    date: "03 May 2026",
+    url: "/#",
+  },
+  {
+    id: 4,
+    title: "Customer Experience Research Report",
+    category: "Research",
+    date: "30 Apr 2026",
+    url: "/#",
+  },
+  {
+    id: 5,
+    title: "Supply Chain Optimisation Guide",
+    category: "Operations",
+    date: "27 Apr 2026",
+    url: "/#",
+  },
 ] as const;
 
 const CATEGORY_ICON: Record<string, string> = {
@@ -30,9 +60,7 @@ const CATEGORY_ICON: Record<string, string> = {
   Operations: "⚙️",
 };
 
-export const BusinessPaper: React.FC<BusinessPaperProps> = ({
-  editMode = false,
-}) => {
+export const BusinessPaper: React.FC<BusinessPaperProps> = ({ editMode = false }) => {
   const handleClick = (item: PaperItem) => {
     if (editMode) return;
     window.open(item.url, "_self");
@@ -56,10 +84,7 @@ export const BusinessPaper: React.FC<BusinessPaperProps> = ({
               editMode ? "cursor-default" : "cursor-pointer hover:bg-surface-muted"
             }`}
           >
-            <span
-              className="text-xl flex-shrink-0 mt-0.5"
-              aria-hidden="true"
-            >
+            <span className="text-xl flex-shrink-0 mt-0.5" aria-hidden="true">
               {CATEGORY_ICON[item.category] ?? "📄"}
             </span>
             <div className="flex-1 min-w-0">
@@ -67,9 +92,7 @@ export const BusinessPaper: React.FC<BusinessPaperProps> = ({
                 {item.title}
               </p>
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-[11px] text-text-muted">
-                  {item.category}
-                </span>
+                <span className="text-[11px] text-text-muted">{item.category}</span>
                 <span className="text-[11px] text-text-subtle">·</span>
                 <span className="text-[11px] text-text-subtle">{item.date}</span>
               </div>

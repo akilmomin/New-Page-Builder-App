@@ -17,14 +17,78 @@ interface EventProps {
 }
 
 const EVENTS: readonly EventItem[] = [
-  { id: 1, title: "Annual General Meeting", date: "15 May 2026", time: "09:00 AM", location: "Main Boardroom", url: "/#", color: "bg-blue-500" },
-  { id: 2, title: "Tech Talk: AI in Finance", date: "18 May 2026", time: "02:00 PM", location: "Conference Hall A", url: "/#", color: "bg-violet-500" },
-  { id: 3, title: "Team Building Workshop", date: "22 May 2026", time: "10:00 AM", location: "Rooftop Garden", url: "/#", color: "bg-emerald-500" },
-  { id: 4, title: "Product Launch Q2 2026", date: "28 May 2026", time: "11:00 AM", location: "Auditorium", url: "/#", color: "bg-orange-500" },
-  { id: 5, title: "Compliance Training Session", date: "02 Jun 2026", time: "03:00 PM", location: "Training Room B", url: "/#", color: "bg-rose-500" },
-  { id: 6, title: "Mid-Year Strategy Review", date: "10 Jun 2026", time: "09:00 AM", location: "Executive Suite", url: "/#", color: "bg-teal-500" },
-  { id: 7, title: "Innovation Hackathon", date: "20 Jun 2026", time: "08:00 AM", location: "Innovation Lab", url: "/#", color: "bg-indigo-500" },
-  { id: 8, title: "Client Appreciation Day", date: "25 Jun 2026", time: "12:00 PM", location: "Grand Lobby", url: "/#", color: "bg-pink-500" },
+  {
+    id: 1,
+    title: "Annual General Meeting",
+    date: "15 May 2026",
+    time: "09:00 AM",
+    location: "Main Boardroom",
+    url: "/#",
+    color: "bg-blue-500",
+  },
+  {
+    id: 2,
+    title: "Tech Talk: AI in Finance",
+    date: "18 May 2026",
+    time: "02:00 PM",
+    location: "Conference Hall A",
+    url: "/#",
+    color: "bg-violet-500",
+  },
+  {
+    id: 3,
+    title: "Team Building Workshop",
+    date: "22 May 2026",
+    time: "10:00 AM",
+    location: "Rooftop Garden",
+    url: "/#",
+    color: "bg-emerald-500",
+  },
+  {
+    id: 4,
+    title: "Product Launch Q2 2026",
+    date: "28 May 2026",
+    time: "11:00 AM",
+    location: "Auditorium",
+    url: "/#",
+    color: "bg-orange-500",
+  },
+  {
+    id: 5,
+    title: "Compliance Training Session",
+    date: "02 Jun 2026",
+    time: "03:00 PM",
+    location: "Training Room B",
+    url: "/#",
+    color: "bg-rose-500",
+  },
+  {
+    id: 6,
+    title: "Mid-Year Strategy Review",
+    date: "10 Jun 2026",
+    time: "09:00 AM",
+    location: "Executive Suite",
+    url: "/#",
+    color: "bg-teal-500",
+  },
+  {
+    id: 7,
+    title: "Innovation Hackathon",
+    date: "20 Jun 2026",
+    time: "08:00 AM",
+    location: "Innovation Lab",
+    url: "/#",
+    color: "bg-indigo-500",
+  },
+  {
+    id: 8,
+    title: "Client Appreciation Day",
+    date: "25 Jun 2026",
+    time: "12:00 PM",
+    location: "Grand Lobby",
+    url: "/#",
+    color: "bg-pink-500",
+  },
 ] as const;
 
 export const Event: React.FC<EventProps> = ({ editMode = false }) => {
@@ -47,9 +111,7 @@ export const Event: React.FC<EventProps> = ({ editMode = false }) => {
           <li
             key={item.id}
             onClick={() => handleClick(item)}
-            className={`flex gap-3 ${
-              editMode ? "cursor-default" : "cursor-pointer group"
-            }`}
+            className={`flex gap-3 ${editMode ? "cursor-default" : "cursor-pointer group"}`}
           >
             {/* Date block */}
             <div

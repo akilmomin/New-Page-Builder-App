@@ -1,5 +1,9 @@
 import type React from "react";
-import type { ComponentDefinition, PageNode } from "../../../../models/pageBuilder";
+import type {
+  ComponentDefinition,
+  ILayoutData,
+  SerializableLayoutItem,
+} from "../../../../models/pageBuilder";
 import type {
   ToolbarRenderProps,
   AddTriggerRenderProps,
@@ -10,14 +14,14 @@ import type {
 } from "../../../../models/pageBuilder";
 
 export interface PageBuilderClassNames {
-  root?:       string;
-  toolbar?:    string;
-  canvas?:     string;
-  section?:    string;
+  root?: string;
+  toolbar?: string;
+  canvas?: string;
+  section?: string;
   subsection?: string;
-  component?:  string;
+  component?: string;
   addTrigger?: string;
-  picker?:     string;
+  picker?: string;
   pickerItem?: string;
 }
 
@@ -25,25 +29,28 @@ export interface PageBuilderProps {
   components: ComponentDefinition[];
 
   // ── Controlled mode ────────────────────────────────────────────────────────
-  value?:    readonly PageNode[];
-  onChange?: (nodes: readonly PageNode[]) => void;
+  /** Controlled layout value. */
+  value?: ILayoutData[];
+  /** Called with serializable ILayoutData[] (renderComponent stripped) on every change. */
+  onChange?: (items: SerializableLayoutItem[]) => void;
 
   // ── Uncontrolled mode ──────────────────────────────────────────────────────
-  defaultValue?: readonly PageNode[];
+  /** Initial layout for uncontrolled mode. */
+  defaultValue?: ILayoutData[];
 
   // ── Edit mode ──────────────────────────────────────────────────────────────
-  editMode?:          boolean;
-  onEditModeChange?:  (isEdit: boolean) => void;
+  editMode?: boolean;
+  onEditModeChange?: (isEdit: boolean) => void;
 
   // ── Render-prop slots ──────────────────────────────────────────────────────
-  renderToolbar?:           (props: ToolbarRenderProps)           => React.ReactNode;
-  renderAddTrigger?:        (props: AddTriggerRenderProps)        => React.ReactNode;
-  renderLayoutPicker?:      (props: LayoutPickerRenderProps)      => React.ReactNode;
-  renderComponentPicker?:   (props: ComponentPickerRenderProps)   => React.ReactNode;
-  renderSectionControls?:   (props: SectionControlsRenderProps)   => React.ReactNode;
+  renderToolbar?: (props: ToolbarRenderProps) => React.ReactNode;
+  renderAddTrigger?: (props: AddTriggerRenderProps) => React.ReactNode;
+  renderLayoutPicker?: (props: LayoutPickerRenderProps) => React.ReactNode;
+  renderComponentPicker?: (props: ComponentPickerRenderProps) => React.ReactNode;
+  renderSectionControls?: (props: SectionControlsRenderProps) => React.ReactNode;
   renderComponentControls?: (props: ComponentControlsRenderProps) => React.ReactNode;
 
   // ── Styling ────────────────────────────────────────────────────────────────
   classNames?: PageBuilderClassNames;
-  style?:      React.CSSProperties;
+  style?: React.CSSProperties;
 }

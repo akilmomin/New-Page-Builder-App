@@ -11,9 +11,7 @@ const computeSizes = (total: number): { mdSize: number; smSize: number } => {
   };
 };
 
-export const useGridLayout = (
-  children: readonly PageNode[] | undefined
-): readonly GridColumn[] =>
+export const useGridLayout = (children: readonly PageNode[] | undefined): readonly GridColumn[] =>
   useMemo(() => {
     if (!children || children.length === 0) return [];
     return children.map((node, index) => {

@@ -16,11 +16,46 @@ interface NewsProps {
 }
 
 const NEWS_ITEMS: readonly NewsItem[] = [
-  { id: 1, title: "Company Quarterly Results Exceed Expectations", category: "Finance", language: "English", date: "08 May 2026", url: "/#" },
-  { id: 2, title: "New Office Opens in Singapore", category: "Corporate", language: "English", date: "06 May 2026", url: "/#" },
-  { id: 3, title: "Annual Sustainability Report Released", category: "ESG", language: "English", date: "04 May 2026", url: "/#" },
-  { id: 4, title: "Technology Innovation Award 2026", category: "Tech", language: "English", date: "01 May 2026", url: "/#" },
-  { id: 5, title: "Employee Wellness Programme Launched", category: "HR", language: "English", date: "28 Apr 2026", url: "/#" },
+  {
+    id: 1,
+    title: "Company Quarterly Results Exceed Expectations",
+    category: "Finance",
+    language: "English",
+    date: "08 May 2026",
+    url: "/#",
+  },
+  {
+    id: 2,
+    title: "New Office Opens in Singapore",
+    category: "Corporate",
+    language: "English",
+    date: "06 May 2026",
+    url: "/#",
+  },
+  {
+    id: 3,
+    title: "Annual Sustainability Report Released",
+    category: "ESG",
+    language: "English",
+    date: "04 May 2026",
+    url: "/#",
+  },
+  {
+    id: 4,
+    title: "Technology Innovation Award 2026",
+    category: "Tech",
+    language: "English",
+    date: "01 May 2026",
+    url: "/#",
+  },
+  {
+    id: 5,
+    title: "Employee Wellness Programme Launched",
+    category: "HR",
+    language: "English",
+    date: "28 Apr 2026",
+    url: "/#",
+  },
 ] as const;
 
 const CATEGORY_COLORS: Record<string, string> = {

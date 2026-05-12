@@ -3,8 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Page Builder",
-  description:
-    "Next.js page builder with Cosine-inspired GridLayout system",
+  description: "Next.js page builder with Cosine-inspired GridLayout system",
 };
 
 export default function RootLayout({

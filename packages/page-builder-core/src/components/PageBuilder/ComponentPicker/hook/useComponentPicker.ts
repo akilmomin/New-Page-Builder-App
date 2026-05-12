@@ -10,7 +10,7 @@ export function useComponentPicker(components: ComponentDefinition[]) {
       ? components.filter(
           (c) =>
             c.label.toLowerCase().includes(query.toLowerCase()) ||
-            c.category?.toLowerCase().includes(query.toLowerCase())
+            c.category?.toLowerCase().includes(query.toLowerCase()),
         )
       : components;
 

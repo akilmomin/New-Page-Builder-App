@@ -29,9 +29,7 @@ export const TilesQuickLink: React.FC = () => {
   const [isGridView, setIsGridView] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const visibleTiles = isEditMode
-    ? ALL_TILES
-    : ALL_TILES.filter((t) => t.show);
+  const visibleTiles = isEditMode ? ALL_TILES : ALL_TILES.filter((t) => t.show);
 
   const scrollLeft = useCallback(() => {
     if (!scrollRef.current) return;
@@ -135,9 +133,7 @@ const TileItem: React.FC<TileItemProps> = ({ tile, scrollable = false }) => (
     }`}
     title={tile.text}
   >
-    <span className="text-2xl group-hover:scale-110 transition-transform">
-      {tile.icon}
-    </span>
+    <span className="text-2xl group-hover:scale-110 transition-transform">{tile.icon}</span>
     <span className="text-[10px] text-text-muted group-hover:text-primary font-medium leading-tight text-center truncate w-full">
       {tile.text}
     </span>

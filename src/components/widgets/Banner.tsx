@@ -7,9 +7,24 @@ interface BannerProps {
 }
 
 const SLIDES = [
-  { id: 1, title: "Welcome to the Page Builder", subtitle: "Drag, drop and build pages effortlessly", bg: "from-blue-600 to-blue-800" },
-  { id: 2, title: "Powerful Layout System", subtitle: "Responsive grids inspired by Cosine UI", bg: "from-indigo-600 to-purple-700" },
-  { id: 3, title: "Component Library", subtitle: "News, Events, Quick Tiles and more", bg: "from-teal-600 to-cyan-700" },
+  {
+    id: 1,
+    title: "Welcome to the Page Builder",
+    subtitle: "Drag, drop and build pages effortlessly",
+    bg: "from-blue-600 to-blue-800",
+  },
+  {
+    id: 2,
+    title: "Powerful Layout System",
+    subtitle: "Responsive grids inspired by Cosine UI",
+    bg: "from-indigo-600 to-purple-700",
+  },
+  {
+    id: 3,
+    title: "Component Library",
+    subtitle: "News, Events, Quick Tiles and more",
+    bg: "from-teal-600 to-cyan-700",
+  },
 ] as const;
 
 export const Banner: React.FC<BannerProps> = ({ editMode = false }) => {

@@ -16,7 +16,9 @@
       "Bash(mv 'c:/workspace/Projects/New Page Builder App/packages/page-builder-core/src/components/PageBuilder/LayoutPicker/component/LayoutPicker.tsx' 'c:/workspace/Projects/New Page Builder App/packages/page-builder-core/src/components/PageBuilder/LayoutPicker/LayoutPicker.tsx')",
       "Bash(mv 'c:/workspace/Projects/New Page Builder App/packages/page-builder-core/src/components/PageBuilder/NodeRenderer/component/NodeRenderer.tsx' 'c:/workspace/Projects/New Page Builder App/packages/page-builder-core/src/components/PageBuilder/NodeRenderer/NodeRenderer.tsx')",
       "Bash(mv 'c:/workspace/Projects/New Page Builder App/packages/page-builder-core/src/components/PageBuilder/PageBuilder/component/PageBuilder.tsx' 'c:/workspace/Projects/New Page Builder App/packages/page-builder-core/src/components/PageBuilder/PageBuilder/PageBuilder.tsx')",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(npx prettier *)",
+      "Bash(pnpm add *)"
     ],
     "additionalDirectories": [
       "c:\\workspace\\Projects\\New Page Builder App\\src"

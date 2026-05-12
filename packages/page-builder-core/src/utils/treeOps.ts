@@ -10,9 +10,7 @@ import { generateId } from "./generateId";
 
 // ─── Build helpers ────────────────────────────────────────────────────────────
 
-export const buildSubSections = (
-  columns: readonly number[]
-): readonly PageNode[] =>
+export const buildSubSections = (columns: readonly number[]): readonly PageNode[] =>
   columns.map((col) => ({
     type: "SubSection" as const,
     isGrid: true,
@@ -34,7 +32,7 @@ export const buildSection = (columns: readonly number[]): PageNode => ({
 /** Map over every node in the tree, returning a new tree. */
 export const mapTree = (
   nodes: readonly PageNode[],
-  transform: (node: PageNode) => PageNode
+  transform: (node: PageNode) => PageNode,
 ): readonly PageNode[] =>
   nodes.map((node) => {
     const transformed = transform(node);
@@ -46,10 +44,7 @@ export const mapTree = (
   });
 
 /** Filter — remove a node by uniqueId at any depth. */
-export const filterTree = (
-  nodes: readonly PageNode[],
-  removeId: string
-): readonly PageNode[] =>
+export const filterTree = (nodes: readonly PageNode[], removeId: string): readonly PageNode[] =>
   nodes
     .filter((node) => node.uniqueId !== removeId)
     .map((node) => {
@@ -67,11 +62,7 @@ export const deepCloneWithNewIds = (node: PageNode): PageNode => ({
 // ─── Array helpers ────────────────────────────────────────────────────────────
 
 /** Insert item after the element at `index` — immutably. */
-export const insertAfter = <T>(
-  arr: readonly T[],
-  index: number,
-  item: T
-): readonly T[] => [
+export const insertAfter = <T>(arr: readonly T[], index: number, item: T): readonly T[] => [
   ...arr.slice(0, index + 1),
   item,
   ...arr.slice(index + 1),
@@ -84,7 +75,7 @@ export const insertAfter = <T>(
 export const addSectionToNode = (
   nodes: readonly PageNode[],
   targetId: string,
-  columns: readonly number[]
+  columns: readonly number[],
 ): readonly PageNode[] => {
   const newSection = buildSection(columns);
   if (targetId === "__root__") return [...nodes, newSection];
@@ -94,14 +85,16 @@ export const addSectionToNode = (
   });
 };
 
-/** Add a Section after sibling at `afterIndex` inside `parentId`. */
+/** Add a Section after sibling at `afterIndex` inside `parentId`.
+ *  Pass `"__root__"` to insert at the top level. */
 export const addSectionAfterIndex = (
   nodes: readonly PageNode[],
   parentId: string,
   afterIndex: number,
-  columns: readonly number[]
+  columns: readonly number[],
 ): readonly PageNode[] => {
   const newSection = buildSection(columns);
+  if (parentId === "__root__") return insertAfter(nodes, afterIndex, newSection);
   return mapTree(nodes, (node) => {
     if (node.uniqueId !== parentId || !node.children) return node;
     return {
@@ -111,12 +104,31 @@ export const addSectionAfterIndex = (
   });
 };
 
+/** Reshape a Section's columns to match new spans, preserving existing content by position. */
+export const changeSectionLayout = (
+  nodes: readonly PageNode[],
+  sectionId: string,
+  columns: readonly number[],
+): readonly PageNode[] =>
+  mapTree(nodes, (node) => {
+    if (node.uniqueId !== sectionId || node.type !== "Section") return node;
+    const existing = (node.children ?? []).filter((c) => c.type === "SubSection");
+    const newSubSections: PageNode[] = columns.map((span, i) => ({
+      type:      "SubSection" as const,
+      isGrid:    true,
+      gridValue: span,
+      uniqueId:  existing[i]?.uniqueId ?? generateId(),
+      children:  existing[i]?.children ?? [],
+    }));
+    return { ...node, children: newSubSections };
+  });
+
 /** Add a Component node inside the node identified by `targetId`. */
 export const addComponentToNode = (
   nodes: readonly PageNode[],
   targetId: string,
   componentName: string,
-  componentProps?: Record<string, unknown>
+  componentProps?: Record<string, unknown>,
 ): readonly PageNode[] => {
   const componentNode: PageNode = {
     type: "Component",
@@ -131,19 +143,14 @@ export const addComponentToNode = (
 };
 
 /** Delete the node identified by `nodeId`. */
-export const deleteNodeById = (
-  nodes: readonly PageNode[],
-  nodeId: string
-): readonly PageNode[] => filterTree(nodes, nodeId);
+export const deleteNodeById = (nodes: readonly PageNode[], nodeId: string): readonly PageNode[] =>
+  filterTree(nodes, nodeId);
 
 /** Clone the node identified by `nodeId` and insert it after itself. */
-export const cloneNodeById = (
-  nodes: readonly PageNode[]
-): (nodeId: string) => readonly PageNode[] =>
+export const cloneNodeById =
+  (nodes: readonly PageNode[]): ((nodeId: string) => readonly PageNode[]) =>
   (nodeId: string) => {
-    const cloneInTree = (
-      arr: readonly PageNode[]
-    ): readonly PageNode[] => {
+    const cloneInTree = (arr: readonly PageNode[]): readonly PageNode[] => {
       const idx = arr.findIndex((n) => n.uniqueId === nodeId);
       if (idx !== -1) {
         const cloned = deepCloneWithNewIds(arr[idx]);
