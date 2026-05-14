@@ -81,7 +81,7 @@ export const addSectionToNode = (
   if (targetId === "__root__") return [...nodes, newSection];
   return mapTree(nodes, (node) => {
     if (node.uniqueId !== targetId) return node;
-    return { ...node, children: [newSection] };
+    return { ...node, children: [...(node.children ?? []), newSection] };
   });
 };
 
@@ -138,7 +138,7 @@ export const addComponentToNode = (
   };
   return mapTree(nodes, (node) => {
     if (node.uniqueId !== targetId) return node;
-    return { ...node, children: [componentNode] };
+    return { ...node, children: [...(node.children ?? []), componentNode] };
   });
 };
 

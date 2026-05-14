@@ -33,6 +33,7 @@ export const LAYOUT_PRESETS = {
   single: [12] as const,
   double: [6, 6] as const,
   triple: [4, 4, 4] as const,
+  fourColumns: [3, 3, 3, 3] as const,
   leftWide: [8, 4] as const,
   rightWide: [4, 8] as const,
 } as const;
@@ -55,6 +56,7 @@ export interface ToolbarRenderProps {
   isEditMode: boolean;
   onToggleEditMode: () => void;
   onReset: () => void;
+  onSave?: () => void;
 }
 
 export interface AddTriggerRenderProps {
@@ -92,7 +94,15 @@ export interface ILayoutData {
   Id: string;
   /** Groups items into a row/section. Items with the same SectionId form one row. */
   SectionId: string;
-  /** Zero-based column position within the section. */
+  /**
+   * Sequential order of this section/row on the page (0 = first row, 1 = second, …).
+   * Auto-assigned by the builder — re-numbered when sections are added, removed, or reordered.
+   */
+  RowIndex: number;
+  /**
+   * Zero-based column position within the row (0 = first column, 1 = second, …).
+   * Auto-assigned by the builder — re-numbered when columns change within a section.
+   */
   ColumnIndex: number;
   /** Width on a 12-col grid (e.g. 8 for 2/3). Defaults to equal distribution. */
   ColumnSpan?: number;

@@ -4,6 +4,8 @@ export interface NodeRendererContext {
   activeComponentId: string | null;
   popUpId: string | null;
   showSection: boolean;
+  /** Gap in pixels between stacked components within the same column. */
+  spacing: number;
   onActivateSection: (id: string | null) => void;
   onActivateComponent: (id: string | null) => void;
   onSetPopUp: (id: string | null) => void;

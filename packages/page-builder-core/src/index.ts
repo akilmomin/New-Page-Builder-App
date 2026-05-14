@@ -27,7 +27,7 @@ export type {
   ComponentControlsRenderProps,
 } from "./models/pageBuilder";
 
-export type { PageBuilderProps, PageBuilderClassNames } from "./components/PageBuilder";
+export type { PageBuilderProps, PageBuilderClassNames, PageBuilderHandle } from "./components/PageBuilder";
 export type { GridLayoutProps } from "./components/GridLayout";
 
 // ── Constants ─────────────────────────────────────────────────────────────────

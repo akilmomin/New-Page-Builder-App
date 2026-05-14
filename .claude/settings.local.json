@@ -18,7 +18,19 @@
       "Bash(mv 'c:/workspace/Projects/New Page Builder App/packages/page-builder-core/src/components/PageBuilder/PageBuilder/component/PageBuilder.tsx' 'c:/workspace/Projects/New Page Builder App/packages/page-builder-core/src/components/PageBuilder/PageBuilder/PageBuilder.tsx')",
       "Bash(npx tsc *)",
       "Bash(npx prettier *)",
-      "Bash(pnpm add *)"
+      "Bash(pnpm add *)",
+      "Bash(Get-ChildItem -Path \"c:\\\\workspace\\\\Projects\\\\New Page Builder App\" -Recurse -Directory)",
+      "Bash(Select-Object -First 50)",
+      "Bash(Format-Table FullName)",
+      "Bash(cat next.config.ts)",
+      "Bash(cat next.config.js)",
+      "Bash(cat next.config.mjs)",
+      "Bash(npm run *)",
+      "Bash(npx next *)",
+      "Bash(findstr \"3000\\\\|3001\\\\|3002\")",
+      "Bash(findstr \"LISTEN\")",
+      "Bash(findstr \":300\")",
+      "Bash(git rm *)"
     ],
     "additionalDirectories": [
       "c:\\workspace\\Projects\\New Page Builder App\\src"

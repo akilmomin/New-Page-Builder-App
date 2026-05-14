@@ -82,6 +82,7 @@ const SectionItem: React.FC<NodeItemProps> = ({ node, index, components, ctx, pa
   const attributes: ILayoutData[] = (node.children ?? []).map((child, colIndex) => ({
     Id: child.uniqueId,
     SectionId: node.uniqueId,
+    RowIndex: 0,
     ColumnIndex: colIndex,
     ComponentName: "",
     renderComponent: () => (
@@ -119,7 +120,12 @@ const SectionItem: React.FC<NodeItemProps> = ({ node, index, components, ctx, pa
           minHeight: 40,
         }}
       >
-        <GridLayout attributes={attributes} columnSpans={columnSpans} gapPx={16} />
+        <GridLayout
+          attributes={attributes}
+          columnSpans={columnSpans}
+          gapPx={16}
+          componentGapPx={ctx.spacing}
+        />
 
         {/* Controls overlaid inside the section so hover stays active */}
         {ctx.isEditMode && isActive && (
@@ -158,7 +164,7 @@ const SectionItem: React.FC<NodeItemProps> = ({ node, index, components, ctx, pa
         )}
 
         {/* Layout picker — opens when ⊞ is clicked */}
-        {ctx.popUpId === `layout:${node.uniqueId}` && (
+        {ctx.isEditMode && ctx.popUpId === `layout:${node.uniqueId}` && (
           <div style={{ position: "absolute", top: 36, right: 4, zIndex: 200 }}>
             <LayoutPicker
               presets={LAYOUT_PRESETS}
@@ -210,23 +216,32 @@ const SubSectionItem: React.FC<NodeItemProps> = ({ node, components, ctx }) => {
       data-pb-subsection={node.uniqueId}
       style={{ minHeight: ctx.isEditMode ? 60 : undefined, boxSizing: "border-box" }}
     >
-      {node.children?.map((child, i) => (
-        <NodeItem
-          key={child.uniqueId}
-          node={child}
-          index={i}
-          components={components}
-          ctx={ctx}
-          parentId={node.uniqueId}
-        />
-      ))}
+      {/* Render children with spacing gap between them */}
+      <div style={{ display: "flex", flexDirection: "column", gap: ctx.spacing }}>
+        {node.children?.map((child, i) => (
+          <NodeItem
+            key={child.uniqueId}
+            node={child}
+            index={i}
+            components={components}
+            ctx={ctx}
+            parentId={node.uniqueId}
+          />
+        ))}
+      </div>
 
-      {/* Empty slot: add component button */}
-      {ctx.isEditMode && isEmpty && (
+      {/* Add component: large empty slot when empty, compact button when populated */}
+      {ctx.isEditMode && (
         <div style={{ position: "relative" }}>
-          <div style={emptySlotStyle} onClick={openPicker}>
-            <span style={{ fontSize: 20, opacity: 0.4 }}>+</span>
-          </div>
+          {isEmpty ? (
+            <div style={emptySlotStyle} onClick={openPicker}>
+              <span style={{ fontSize: 20, opacity: 0.4 }}>+</span>
+            </div>
+          ) : (
+            <div style={addMoreButtonStyle} onClick={openPicker}>
+              <span style={{ fontSize: 12, opacity: 0.5 }}>+ Add Component</span>
+            </div>
+          )}
           {showPicker && (
             <ComponentPicker
               components={components}
@@ -276,6 +291,7 @@ const ComponentItem: React.FC<{
         cursor: ctx.isEditMode ? "pointer" : "default",
       }}
     >
+      <Component {...(node.componentProps as object)} editMode={ctx.isEditMode} />
       {ctx.isEditMode && isActive && (
         <div style={componentControlsStyle}>
           <CtrlButton
@@ -299,7 +315,6 @@ const ComponentItem: React.FC<{
           </CtrlButton>
         </div>
       )}
-      <Component {...(node.componentProps as object)} editMode={ctx.isEditMode} />
     </div>
   );
 };
@@ -329,6 +344,7 @@ const CtrlButton: React.FC<{
         color: hov && danger ? "#dc2626" : "var(--pb-text-muted, #666)",
         lineHeight: 1.5,
         transition: "background 0.1s, color 0.1s",
+        pointerEvents: "auto",
       }}
     >
       {children}
@@ -375,8 +391,10 @@ const controlsBarBase: React.CSSProperties = {
   boxShadow: "var(--pb-shadow, 0 2px 8px rgba(0,0,0,0.1))",
 };
 
-// Section controls: top-LEFT corner
-const sectionControlsStyle: React.CSSProperties = { ...controlsBarBase, left: 4 };
+// Section controls: top-LEFT corner — pointer-events:none so the bar's background
+// doesn't swallow clicks on column 0 content underneath it.
+// The <button> children have their own pointer-events:auto and remain clickable.
+const sectionControlsStyle: React.CSSProperties = { ...controlsBarBase, left: 4, pointerEvents: "none" };
 
 // Component controls: top-RIGHT corner
 const componentControlsStyle: React.CSSProperties = { ...controlsBarBase, right: 4 };
@@ -387,6 +405,18 @@ const emptySlotStyle: React.CSSProperties = {
   justifyContent: "center",
   minHeight: 60,
   border: "2px dashed var(--pb-border, #e0e0e0)",
+  borderRadius: "var(--pb-radius-sm, 6px)",
+  cursor: "pointer",
+  transition: "border-color 0.15s, background 0.15s",
+};
+
+const addMoreButtonStyle: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: "4px 0",
+  marginTop: 4,
+  border: "1px dashed var(--pb-border, #e0e0e0)",
   borderRadius: "var(--pb-radius-sm, 6px)",
   cursor: "pointer",
   transition: "border-color 0.15s, background 0.15s",

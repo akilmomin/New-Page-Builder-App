@@ -5,7 +5,6 @@ import type {
   SerializableLayoutItem,
 } from "../../../../models/pageBuilder";
 import type {
-  ToolbarRenderProps,
   AddTriggerRenderProps,
   LayoutPickerRenderProps,
   ComponentPickerRenderProps,
@@ -15,7 +14,6 @@ import type {
 
 export interface PageBuilderClassNames {
   root?: string;
-  toolbar?: string;
   canvas?: string;
   section?: string;
   subsection?: string;
@@ -23,6 +21,27 @@ export interface PageBuilderClassNames {
   addTrigger?: string;
   picker?: string;
   pickerItem?: string;
+}
+
+/**
+ * Imperative handle exposed via `ref` on `<PageBuilder>`.
+ * Only needed for actions that can't be expressed as props (e.g. reset in uncontrolled mode).
+ * For save, use the `onSaveChange` prop instead.
+ *
+ * @example
+ * const ref = useRef<PageBuilderHandle>(null);
+ * <button onClick={() => ref.current?.reset()}>Reset</button>
+ * <PageBuilder ref={ref} ... />
+ */
+export interface PageBuilderHandle {
+  /** Clear all sections and components from the canvas. */
+  reset: () => void;
+  /**
+   * Programmatically trigger `onSaveChange` with the current layout.
+   * Use this when your Save button lives outside the PageBuilder (e.g. in an external toolbar).
+   * No-op when `onSaveChange` is not provided.
+   */
+  save: () => void;
 }
 
 export interface PageBuilderProps {
@@ -39,11 +58,30 @@ export interface PageBuilderProps {
   defaultValue?: ILayoutData[];
 
   // ── Edit mode ──────────────────────────────────────────────────────────────
+  /**
+   * Controlled edit-mode flag.
+   * When provided, PageBuilder will not manage this state internally — the
+   * caller's toolbar is responsible for toggling it.
+   */
   editMode?: boolean;
   onEditModeChange?: (isEdit: boolean) => void;
 
-  // ── Render-prop slots ──────────────────────────────────────────────────────
-  renderToolbar?: (props: ToolbarRenderProps) => React.ReactNode;
+  // ── Spacing ────────────────────────────────────────────────────────────────
+  /** Gap in pixels between stacked components within the same column. Default: 0. */
+  spacing?: number;
+
+  // ── Save ───────────────────────────────────────────────────────────────────
+  /**
+   * Called when the user clicks the Save button rendered inside the builder canvas.
+   * Receives the full serializable layout — safe to JSON.stringify and send to a server.
+   * When omitted the Save button is not shown.
+   *
+   * @example
+   * <PageBuilder onSaveChange={(layout) => fetch('/api/save', { body: JSON.stringify(layout) })} />
+   */
+  onSaveChange?: (items: SerializableLayoutItem[]) => void;
+
+  // ── Render-prop slots (internal builder UI, not the toolbar) ───────────────
   renderAddTrigger?: (props: AddTriggerRenderProps) => React.ReactNode;
   renderLayoutPicker?: (props: LayoutPickerRenderProps) => React.ReactNode;
   renderComponentPicker?: (props: ComponentPickerRenderProps) => React.ReactNode;

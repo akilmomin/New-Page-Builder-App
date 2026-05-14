@@ -50,14 +50,17 @@ const stableKeys = <T>(arr: T[], getKey: (item: T) => string): string[] => {
  * Convert flat ILayoutData[] into the Section → SubSection → Component tree
  * expected by the builder engine.
  *
- * - Each unique SectionId becomes a Section node (order = first appearance).
+ * - Each unique SectionId becomes a Section node, ordered by RowIndex.
  * - Each unique ColumnIndex within a section becomes a SubSection node.
  * - Items are sorted by VerticalIndex and become Component nodes in their SubSection.
  * - Empty-slot items (ComponentName === "") produce an empty SubSection (no Component child).
  */
 export const layoutDataToNodes = (items: ILayoutData[]): readonly PageNode[] => {
   const bySectionId = groupByKey(items, (item) => item.SectionId);
-  const sectionOrder = stableKeys(items, (item) => item.SectionId);
+  // Sort sections by RowIndex (section/row order on the page)
+  const sectionOrder = stableKeys(items, (item) => item.SectionId).sort(
+    (a, b) => (bySectionId[a][0]?.RowIndex ?? 0) - (bySectionId[b][0]?.RowIndex ?? 0),
+  );
 
   return sectionOrder.map((sectionId) => {
     const sectionItems = bySectionId[sectionId];
@@ -115,8 +118,9 @@ export const layoutDataToNodes = (items: ILayoutData[]): readonly PageNode[] => 
 export const nodesToLayoutData = (nodes: readonly PageNode[]): ILayoutData[] => {
   const items: ILayoutData[] = [];
 
-  for (const section of nodes) {
-    if (section.type !== "Section") continue;
+  const sections = nodes.filter((n) => n.type === "Section");
+
+  sections.forEach((section, sectionIdx) => {
     const sectionId = section.uniqueId;
     const subSections = (section.children ?? []).filter((c) => c.type === "SubSection");
     const numCols = subSections.length;
@@ -129,6 +133,7 @@ export const nodesToLayoutData = (nodes: readonly PageNode[]): ILayoutData[] => 
         items.push({
           Id: sub.uniqueId,
           SectionId: sectionId,
+          RowIndex: sectionIdx,
           ColumnIndex: colIndex,
           ColumnSpan: span,
           ComponentName: "",
@@ -138,6 +143,7 @@ export const nodesToLayoutData = (nodes: readonly PageNode[]): ILayoutData[] => 
           items.push({
             Id: comp.uniqueId,
             SectionId: sectionId,
+            RowIndex: sectionIdx,
             ColumnIndex: colIndex,
             ColumnSpan: span,
             VerticalIndex: vIdx,
@@ -146,7 +152,7 @@ export const nodesToLayoutData = (nodes: readonly PageNode[]): ILayoutData[] => 
         });
       }
     });
-  }
+  });
 
   return items;
 };
