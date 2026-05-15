@@ -30,7 +30,11 @@
       "Bash(findstr \"3000\\\\|3001\\\\|3002\")",
       "Bash(findstr \"LISTEN\")",
       "Bash(findstr \":300\")",
-      "Bash(git rm *)"
+      "Bash(git rm *)",
+      "Bash(netstat -ano)",
+      "Bash(findstr \":3000\")",
+      "Bash(findstr \"LISTENING\")",
+      "Bash(pnpm dev *)"
     ],
     "additionalDirectories": [
       "c:\\workspace\\Projects\\New Page Builder App\\src"

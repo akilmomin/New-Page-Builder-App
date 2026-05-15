@@ -1,3 +1,11 @@
+import type React from "react";
+import type {
+  LayoutPickerRenderProps,
+  ComponentPickerRenderProps,
+  SectionControlsRenderProps,
+  ComponentControlsRenderProps,
+} from "../../../../models/pageBuilder";
+
 export interface NodeRendererContext {
   isEditMode: boolean;
   activeSectionId: string | null;
@@ -17,4 +25,10 @@ export interface NodeRendererContext {
   onDeleteNode: (id: string) => void;
   onCloneNode: (id: string) => void;
   onChangeLayout: (sectionId: string, columns: readonly number[]) => void;
+
+  // ── render-prop overrides ─────────────────────────────────────────────────
+  renderLayoutPicker?: (props: LayoutPickerRenderProps) => React.ReactNode;
+  renderComponentPicker?: (props: ComponentPickerRenderProps) => React.ReactNode;
+  renderSectionControls?: (props: SectionControlsRenderProps) => React.ReactNode;
+  renderComponentControls?: (props: ComponentControlsRenderProps) => React.ReactNode;
 }

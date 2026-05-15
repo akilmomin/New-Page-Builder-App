@@ -17,10 +17,13 @@ export const PageBuilder = forwardRef<PageBuilderHandle, PageBuilderProps>(
       defaultValue,
       editMode,
       onEditModeChange,
-      spacing = 0,
+      spacing = 8,
       onSaveChange,
       renderAddTrigger,
       renderLayoutPicker,
+      renderComponentPicker,
+      renderSectionControls,
+      renderComponentControls,
       classNames = {},
       style,
     },
@@ -53,6 +56,10 @@ export const PageBuilder = forwardRef<PageBuilderHandle, PageBuilderProps>(
       onChangeLayout: pb.changeLayout,
       onDeleteNode: pb.deleteNode,
       onCloneNode: pb.cloneNode,
+      renderLayoutPicker,
+      renderComponentPicker,
+      renderSectionControls,
+      renderComponentControls,
     };
 
     const handleAddRootClick = (e: React.MouseEvent) => {

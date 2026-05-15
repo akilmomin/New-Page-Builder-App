@@ -66,7 +66,7 @@ export function PageBuilderApp() {
           Save
         </button>
       </div>
-
+<div style={{padding:8}}>
       <PageBuilder
         ref={builderRef}
         components={components}
@@ -74,8 +74,9 @@ export function PageBuilderApp() {
         editMode={editMode}
         onEditModeChange={setEditMode}
         onSaveChange={handleSave}
-        spacing={8}
+        spacing={16}
       />
+    </div>
     </div>
   );
 }

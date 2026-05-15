@@ -79,6 +79,10 @@ export interface SectionControlsRenderProps {
   nodeId: string;
   onClone: () => void;
   onDelete: () => void;
+  /** Toggle the layout picker open/closed for this section. */
+  onChangeLayout: () => void;
+  /** Whether the layout picker is currently open for this section. */
+  isLayoutPickerOpen: boolean;
 }
 
 export interface ComponentControlsRenderProps {
@@ -114,6 +118,11 @@ export interface ILayoutData {
   CorePersona?: string;
   /** JSON-encoded extra metadata (e.g. `{ "order": 2 }`). */
   StateData?: string;
+  /**
+   * Static props passed directly to the rendered component (e.g. `{ fieldId: "email", label: "Email" }`).
+   * Carried through the ILayoutData ↔ PageNode round-trip and included in serialized output.
+   */
+  componentProps?: Record<string, unknown>;
   /**
    * Runtime render override — called instead of the registry component.
    * NEVER serialized; stripped automatically by onChange / serializeLayout.

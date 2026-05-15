@@ -65,6 +65,7 @@ const NodeItem: React.FC<NodeItemProps> = ({ node, index, components, ctx, paren
 const SectionItem: React.FC<NodeItemProps> = ({ node, index, components, ctx, parentId }) => {
   const isActive = ctx.activeSectionId === node.uniqueId;
   const showAddAfter = ctx.popUpId === `after:${node.uniqueId}`;
+  const isLayoutPickerOpen = ctx.popUpId === `layout:${node.uniqueId}`;
 
   const handleMouseEnter = () => {
     if (ctx.isEditMode) ctx.onActivateSection(node.uniqueId);
@@ -76,6 +77,11 @@ const SectionItem: React.FC<NodeItemProps> = ({ node, index, components, ctx, pa
   const openAddAfter = (e: React.MouseEvent) => {
     e.stopPropagation();
     ctx.onSetPopUp(`after:${node.uniqueId}`);
+  };
+
+  const toggleLayoutPicker = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    ctx.onSetPopUp(isLayoutPickerOpen ? null : `layout:${node.uniqueId}`);
   };
 
   // Map each SubSection child to an ILayoutData entry for GridLayout
@@ -99,10 +105,29 @@ const SectionItem: React.FC<NodeItemProps> = ({ node, index, components, ctx, pa
   // Derive column spans from each SubSection's gridValue (12-col grid)
   const columnSpans = (node.children ?? []).map((child) => Number(child.gridValue) || 12);
 
+  // ── layout picker renderer (shared between change-layout and add-after) ────
+  const renderLayoutPickerNode = (
+    onSelectLayout: (cols: readonly number[]) => void,
+  ): React.ReactNode => {
+    const pickerProps = {
+      presets: LAYOUT_PRESETS,
+      onSelectLayout: (cols: readonly number[]) => {
+        onSelectLayout(cols);
+        ctx.onSetPopUp(null);
+      },
+      onClose: () => ctx.onSetPopUp(null),
+    };
+    return ctx.renderLayoutPicker ? (
+      ctx.renderLayoutPicker(pickerProps)
+    ) : (
+      <LayoutPicker {...pickerProps} />
+    );
+  };
+
   return (
     // Outer wrapper owns the hover — controls are inside it so mouse stays "in bounds"
     <div
-      style={{ position: "relative", marginBottom: 8 }}
+      style={{ position: "relative", marginBottom: ctx.spacing }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -123,57 +148,52 @@ const SectionItem: React.FC<NodeItemProps> = ({ node, index, components, ctx, pa
         <GridLayout
           attributes={attributes}
           columnSpans={columnSpans}
-          gapPx={16}
+          gapPx={ctx.spacing}
           componentGapPx={ctx.spacing}
         />
 
         {/* Controls overlaid inside the section so hover stays active */}
         {ctx.isEditMode && isActive && (
-          <div style={sectionControlsStyle}>
-            <CtrlButton
-              title="Change layout"
-              onClick={(e) => {
-                e.stopPropagation();
-                ctx.onSetPopUp(
-                  ctx.popUpId === `layout:${node.uniqueId}` ? null : `layout:${node.uniqueId}`,
-                );
-              }}
-            >
-              ⊞
-            </CtrlButton>
-            <CtrlButton
-              title="Clone section"
-              onClick={(e) => {
-                e.stopPropagation();
-                ctx.onCloneNode(node.uniqueId);
-              }}
-            >
-              ⧉
-            </CtrlButton>
-            <CtrlButton
-              title="Delete section"
-              danger
-              onClick={(e) => {
-                e.stopPropagation();
-                ctx.onDeleteNode(node.uniqueId);
-              }}
-            >
-              ✕
-            </CtrlButton>
-          </div>
+          ctx.renderSectionControls ? (
+            ctx.renderSectionControls({
+              nodeId: node.uniqueId,
+              onClone: () => ctx.onCloneNode(node.uniqueId),
+              onDelete: () => ctx.onDeleteNode(node.uniqueId),
+              onChangeLayout: () => ctx.onSetPopUp(isLayoutPickerOpen ? null : `layout:${node.uniqueId}`),
+              isLayoutPickerOpen,
+            })
+          ) : (
+            <div style={sectionControlsStyle}>
+              <CtrlButton title="Change layout" onClick={toggleLayoutPicker}>
+                ⊞
+              </CtrlButton>
+              <CtrlButton
+                title="Clone section"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  ctx.onCloneNode(node.uniqueId);
+                }}
+              >
+                ⧉
+              </CtrlButton>
+              <CtrlButton
+                title="Delete section"
+                danger
+                onClick={(e) => {
+                  e.stopPropagation();
+                  ctx.onDeleteNode(node.uniqueId);
+                }}
+              >
+                ✕
+              </CtrlButton>
+            </div>
+          )
         )}
 
         {/* Layout picker — opens when ⊞ is clicked */}
-        {ctx.isEditMode && ctx.popUpId === `layout:${node.uniqueId}` && (
-          <div style={{ position: "absolute", top: 36, right: 4, zIndex: 200 }}>
-            <LayoutPicker
-              presets={LAYOUT_PRESETS}
-              onSelectLayout={(cols) => {
-                ctx.onChangeLayout(node.uniqueId, cols);
-                ctx.onSetPopUp(null);
-              }}
-              onClose={() => ctx.onSetPopUp(null)}
-            />
+        {ctx.isEditMode && isLayoutPickerOpen && (
+          <div style={{ position: "absolute", top: 36, left: 0, right: 0, zIndex: 200 }}>
+            {renderLayoutPickerNode((cols) => ctx.onChangeLayout(node.uniqueId, cols))}
           </div>
         )}
       </div>
@@ -184,14 +204,7 @@ const SectionItem: React.FC<NodeItemProps> = ({ node, index, components, ctx, pa
           <AddAfterBar onClick={openAddAfter} />
           {showAddAfter && (
             <div style={{ position: "relative", zIndex: 100 }}>
-              <LayoutPicker
-                presets={LAYOUT_PRESETS}
-                onSelectLayout={(cols) => {
-                  ctx.onAddSectionAfter(parentId, index, cols);
-                  ctx.onSetPopUp(null);
-                }}
-                onClose={() => ctx.onSetPopUp(null)}
-              />
+              {renderLayoutPickerNode((cols) => ctx.onAddSectionAfter(parentId, index, cols))}
             </div>
           )}
         </div>
@@ -243,14 +256,25 @@ const SubSectionItem: React.FC<NodeItemProps> = ({ node, components, ctx }) => {
             </div>
           )}
           {showPicker && (
-            <ComponentPicker
-              components={components}
-              onSelectComponent={(name) => {
-                ctx.onAddComponent(node.uniqueId, name);
-                ctx.onSetPopUp(null);
-              }}
-              onClose={() => ctx.onSetPopUp(null)}
-            />
+            ctx.renderComponentPicker ? (
+              ctx.renderComponentPicker({
+                components,
+                onSelectComponent: (name) => {
+                  ctx.onAddComponent(node.uniqueId, name);
+                  ctx.onSetPopUp(null);
+                },
+                onClose: () => ctx.onSetPopUp(null),
+              })
+            ) : (
+              <ComponentPicker
+                components={components}
+                onSelectComponent={(name) => {
+                  ctx.onAddComponent(node.uniqueId, name);
+                  ctx.onSetPopUp(null);
+                }}
+                onClose={() => ctx.onSetPopUp(null)}
+              />
+            )
           )}
         </div>
       )}
@@ -293,27 +317,35 @@ const ComponentItem: React.FC<{
     >
       <Component {...(node.componentProps as object)} editMode={ctx.isEditMode} />
       {ctx.isEditMode && isActive && (
-        <div style={componentControlsStyle}>
-          <CtrlButton
-            title="Clone"
-            onClick={(e) => {
-              e.stopPropagation();
-              ctx.onCloneNode(node.uniqueId);
-            }}
-          >
-            ⧉
-          </CtrlButton>
-          <CtrlButton
-            title="Delete"
-            danger
-            onClick={(e) => {
-              e.stopPropagation();
-              ctx.onDeleteNode(node.uniqueId);
-            }}
-          >
-            ✕
-          </CtrlButton>
-        </div>
+        ctx.renderComponentControls ? (
+          ctx.renderComponentControls({
+            nodeId: node.uniqueId,
+            onClone: () => ctx.onCloneNode(node.uniqueId),
+            onDelete: () => ctx.onDeleteNode(node.uniqueId),
+          })
+        ) : (
+          <div style={componentControlsStyle}>
+            <CtrlButton
+              title="Clone"
+              onClick={(e) => {
+                e.stopPropagation();
+                ctx.onCloneNode(node.uniqueId);
+              }}
+            >
+              ⧉
+            </CtrlButton>
+            <CtrlButton
+              title="Delete"
+              danger
+              onClick={(e) => {
+                e.stopPropagation();
+                ctx.onDeleteNode(node.uniqueId);
+              }}
+            >
+              ✕
+            </CtrlButton>
+          </div>
+        )
       )}
     </div>
   );

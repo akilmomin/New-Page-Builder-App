@@ -83,6 +83,7 @@ export const layoutDataToNodes = (items: ILayoutData[]): readonly PageNode[] => 
           type: "Component" as const,
           uniqueId: item.Id,
           componentName: item.ComponentName,
+          ...(item.componentProps ? { componentProps: item.componentProps } : {}),
         }));
 
       return {
@@ -148,6 +149,7 @@ export const nodesToLayoutData = (nodes: readonly PageNode[]): ILayoutData[] => 
             ColumnSpan: span,
             VerticalIndex: vIdx,
             ComponentName: comp.componentName ?? "",
+            ...(comp.componentProps ? { componentProps: comp.componentProps } : {}),
           });
         });
       }

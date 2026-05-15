@@ -67,7 +67,7 @@ export interface PageBuilderProps {
   onEditModeChange?: (isEdit: boolean) => void;
 
   // ── Spacing ────────────────────────────────────────────────────────────────
-  /** Gap in pixels between stacked components within the same column. Default: 0. */
+  /** Gap in pixels between sections (rows) and between stacked components within a column. Default: 8. */
   spacing?: number;
 
   // ── Save ───────────────────────────────────────────────────────────────────
