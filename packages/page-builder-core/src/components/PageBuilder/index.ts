@@ -2,3 +2,5 @@ export { PageBuilder } from "./PageBuilder/PageBuilder";
 export { usePageBuilder } from "./PageBuilder/hook/usePageBuilder";
 export type { PageBuilderProps, PageBuilderClassNames, PageBuilderHandle } from "./PageBuilder/model/model";
 export type { NodeRendererContext } from "./NodeRenderer/model/model";
+export { LayoutPicker } from "./LayoutPicker";
+export type { LayoutPickerProps } from "./LayoutPicker";

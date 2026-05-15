@@ -16,6 +16,11 @@ export interface GridLayoutProps {
   rowGapPx?: number;
   /** Vertical gap between stacked items within a column in pixels. Default: 0. */
   componentGapPx?: number;
+  /**
+   * Viewport width (px) below which all columns collapse to full width (stack vertically).
+   * Default: 768. Set to 0 to disable responsive stacking.
+   */
+  mobileBreakpoint?: number;
   className?: string;
   style?: React.CSSProperties;
 }

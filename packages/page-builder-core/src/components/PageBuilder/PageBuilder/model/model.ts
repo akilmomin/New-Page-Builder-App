@@ -88,6 +88,13 @@ export interface PageBuilderProps {
   renderSectionControls?: (props: SectionControlsRenderProps) => React.ReactNode;
   renderComponentControls?: (props: ComponentControlsRenderProps) => React.ReactNode;
 
+  // ── Responsive ────────────────────────────────────────────────────────────
+  /**
+   * Viewport width (px) below which grid columns collapse to full width.
+   * Default: 768 (tablet). Set to 0 to disable responsive stacking.
+   */
+  mobileBreakpoint?: number;
+
   // ── Styling ────────────────────────────────────────────────────────────────
   classNames?: PageBuilderClassNames;
   style?: React.CSSProperties;

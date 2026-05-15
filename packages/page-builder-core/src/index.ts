@@ -1,5 +1,6 @@
 // ── Components ────────────────────────────────────────────────────────────────
 export { PageBuilder } from "./components/PageBuilder";
+export { LayoutPicker } from "./components/PageBuilder";
 export { GridLayout } from "./components/GridLayout";
 
 // ── Hooks ─────────────────────────────────────────────────────────────────────
@@ -28,6 +29,7 @@ export type {
 } from "./models/pageBuilder";
 
 export type { PageBuilderProps, PageBuilderClassNames, PageBuilderHandle } from "./components/PageBuilder";
+export type { LayoutPickerProps } from "./components/PageBuilder";
 export type { GridLayoutProps } from "./components/GridLayout";
 
 // ── Constants ─────────────────────────────────────────────────────────────────

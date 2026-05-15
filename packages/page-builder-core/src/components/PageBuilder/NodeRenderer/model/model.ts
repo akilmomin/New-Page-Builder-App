@@ -26,6 +26,9 @@ export interface NodeRendererContext {
   onCloneNode: (id: string) => void;
   onChangeLayout: (sectionId: string, columns: readonly number[]) => void;
 
+  /** Viewport width (px) below which grid columns stack. Default: 768. */
+  mobileBreakpoint: number;
+
   // ── render-prop overrides ─────────────────────────────────────────────────
   renderLayoutPicker?: (props: LayoutPickerRenderProps) => React.ReactNode;
   renderComponentPicker?: (props: ComponentPickerRenderProps) => React.ReactNode;

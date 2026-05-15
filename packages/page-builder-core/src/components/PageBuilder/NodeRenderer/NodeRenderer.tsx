@@ -150,6 +150,7 @@ const SectionItem: React.FC<NodeItemProps> = ({ node, index, components, ctx, pa
           columnSpans={columnSpans}
           gapPx={ctx.spacing}
           componentGapPx={ctx.spacing}
+          mobileBreakpoint={ctx.mobileBreakpoint}
         />
 
         {/* Controls overlaid inside the section so hover stays active */}
@@ -191,11 +192,9 @@ const SectionItem: React.FC<NodeItemProps> = ({ node, index, components, ctx, pa
         )}
 
         {/* Layout picker — opens when ⊞ is clicked */}
-        {ctx.isEditMode && isLayoutPickerOpen && (
-          <div style={{ position: "absolute", top: 36, left: 0, right: 0, zIndex: 200 }}>
-            {renderLayoutPickerNode((cols) => ctx.onChangeLayout(node.uniqueId, cols))}
-          </div>
-        )}
+        {ctx.isEditMode && isLayoutPickerOpen &&
+          renderLayoutPickerNode((cols) => ctx.onChangeLayout(node.uniqueId, cols))
+        }
       </div>
 
       {/* Add section after divider */}
