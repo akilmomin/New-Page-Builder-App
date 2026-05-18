@@ -90,10 +90,17 @@ export interface PageBuilderProps {
 
   // ── Responsive ────────────────────────────────────────────────────────────
   /**
-   * Viewport width (px) below which grid columns collapse to full width.
-   * Default: 768 (tablet). Set to 0 to disable responsive stacking.
+   * Viewport width (px) below which grid columns collapse to full width (single column).
+   * Default: 768. Set to 0 to disable responsive stacking.
    */
   mobileBreakpoint?: number;
+  /**
+   * Viewport width (px) above `mobileBreakpoint` and below this value where columns are
+   * limited to a max of 2 per row. Default: 0 (disabled).
+   * Example: `mobileBreakpoint={640} tabletBreakpoint={1024}` →
+   *   < 640: single column, 640–1023: 2-column, ≥ 1024: full layout.
+   */
+  tabletBreakpoint?: number;
 
   // ── Styling ────────────────────────────────────────────────────────────────
   classNames?: PageBuilderClassNames;

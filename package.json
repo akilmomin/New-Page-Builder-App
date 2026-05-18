@@ -8,12 +8,12 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "pkg:build": "pnpm --filter @page-builder/core build",
-    "pkg:dev": "pnpm --filter @page-builder/core dev"
+    "pkg:build": "pnpm --filter react-page-builder build",
+    "pkg:dev": "pnpm --filter react-page-builder dev"
   },
   "dependencies": {
     "next": "15.1.3",
-    "page-builder-core": "workspace:*",
+    "react-page-builder": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

@@ -1,8 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { PageBuilder } from "page-builder-core";
-import type { ComponentDefinition, PageBuilderHandle, SerializableLayoutItem } from "page-builder-core";
+import { PageBuilder } from "react-page-builder";
+import type { ComponentDefinition, PageBuilderHandle, SerializableLayoutItem } from "react-page-builder";
 import { initialLayout } from "@/data/initialLayout";
 import { Banner, BusinessPaper, Event, News, TilesQuickLink } from "@/components/widgets";
 

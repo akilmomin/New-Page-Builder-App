@@ -151,6 +151,7 @@ const SectionItem: React.FC<NodeItemProps> = ({ node, index, components, ctx, pa
           gapPx={ctx.spacing}
           componentGapPx={ctx.spacing}
           mobileBreakpoint={ctx.mobileBreakpoint}
+          tabletBreakpoint={ctx.tabletBreakpoint}
         />
 
         {/* Controls overlaid inside the section so hover stays active */}

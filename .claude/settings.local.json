@@ -34,7 +34,9 @@
       "Bash(netstat -ano)",
       "Bash(findstr \":3000\")",
       "Bash(findstr \"LISTENING\")",
-      "Bash(pnpm dev *)"
+      "Bash(pnpm dev *)",
+      "Bash(pnpm pkg:build)",
+      "Bash(pnpm --filter react-page-builder build)"
     ],
     "additionalDirectories": [
       "c:\\workspace\\Projects\\New Page Builder App\\src"

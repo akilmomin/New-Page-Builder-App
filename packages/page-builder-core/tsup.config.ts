@@ -9,8 +9,11 @@ export default defineConfig({
   clean:            true,
   splitting:        false,
   treeshake:        true,
-  minify:           false,
+  minify:           true,
   external:         ["react", "react-dom"],
+  // Ensures Next.js App Router treats the built dist as a client module.
+  // In plain React (Vite etc.) this string is ignored.
+  banner:           { js: '"use client";' },
   esbuildOptions(options) {
     options.jsx = "automatic";
   },

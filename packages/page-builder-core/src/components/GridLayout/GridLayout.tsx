@@ -9,18 +9,17 @@ const MAX_COLS_PER_ROW = 4;
 
 const spanToPercent = (span: number): string => `${((span / 12) * 100).toFixed(4)}%`;
 
-/** Returns true when the viewport is narrower than `breakpoint` px. SSR-safe. */
-const useIsMobile = (breakpoint: number): boolean => {
-  const [isMobile, setIsMobile] = useState(false);
+const useMediaQuery = (query: string, enabled: boolean): boolean => {
+  const [matches, setMatches] = useState(false);
   useEffect(() => {
-    if (!breakpoint) return;
-    const mql = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    setIsMobile(mql.matches);
+    if (!enabled) return;
+    const mql = window.matchMedia(query);
+    const handler = (e: MediaQueryListEvent) => setMatches(e.matches);
+    setMatches(mql.matches);
     mql.addEventListener("change", handler);
     return () => mql.removeEventListener("change", handler);
-  }, [breakpoint]);
-  return isMobile;
+  }, [query, enabled]);
+  return matches;
 };
 
 export const GridLayout: React.FC<GridLayoutProps> = ({
@@ -30,12 +29,21 @@ export const GridLayout: React.FC<GridLayoutProps> = ({
   rowGapPx,
   componentGapPx = 0,
   mobileBreakpoint = 768,
+  tabletBreakpoint = 0,
   className,
   style,
 }) => {
   const allColumns = useLayout(attributes);
   const rowGap = rowGapPx ?? gapPx;
-  const isMobile = useIsMobile(mobileBreakpoint);
+
+  const isMobile = useMediaQuery(
+    `(max-width: ${mobileBreakpoint - 1}px)`,
+    mobileBreakpoint > 0,
+  );
+  const isTablet = useMediaQuery(
+    `(min-width: ${mobileBreakpoint}px) and (max-width: ${tabletBreakpoint - 1}px)`,
+    tabletBreakpoint > 0 && tabletBreakpoint > mobileBreakpoint,
+  );
 
   // ── Mobile: all columns stack full-width ─────────────────────────────────────
   if (isMobile) {
@@ -54,6 +62,45 @@ export const GridLayout: React.FC<GridLayoutProps> = ({
                 style={{ width: "100%", marginTop: itemIdx > 0 ? componentGapPx : 0 }}
               >
                 {item.renderComponent?.()}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // ── Tablet: max 2 columns per row, each 50% width ────────────────────────────
+  if (isTablet) {
+    const pairs: (typeof allColumns)[] = [];
+    for (let i = 0; i < allColumns.length; i += 2) {
+      pairs.push(allColumns.slice(i, i + 2));
+    }
+    return (
+      <div className={className} style={style} data-pb-grid-layout>
+        {pairs.map((pair, pairIdx) => (
+          <div
+            key={pairIdx}
+            style={{
+              display: "flex",
+              margin: `${pairIdx > 0 ? rowGap : 0}px -${gapPx / 2}px 0`,
+            }}
+          >
+            {pair.map((col) => (
+              <div
+                key={col.colIndex}
+                data-pb-col={col.colIndex}
+                style={{ flex: "0 0 50%", maxWidth: "50%", padding: `0 ${gapPx / 2}px`, boxSizing: "border-box" }}
+              >
+                {col.items.map((item, itemIdx) => (
+                  <div
+                    key={item.Id}
+                    data-pb-grid-item={item.Id}
+                    style={{ width: "100%", marginTop: itemIdx > 0 ? componentGapPx : 0 }}
+                  >
+                    {item.renderComponent?.()}
+                  </div>
+                ))}
               </div>
             ))}
           </div>

@@ -1,19 +1,39 @@
 {
-  "name": "page-builder-core",
+  "name": "react-page-builder",
   "version": "0.1.0",
   "description": "UI-agnostic React page-builder component with 12-column grid, section/component picker, and full render-prop overrides.",
   "author": "",
   "license": "MIT",
+  "keywords": [
+    "react",
+    "page-builder",
+    "drag-drop",
+    "grid",
+    "layout",
+    "cms",
+    "component-library"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_USERNAME/react-page-builder.git"
+  },
+  "homepage": "https://github.com/YOUR_USERNAME/react-page-builder#readme",
+  "bugs": {
+    "url": "https://github.com/YOUR_USERNAME/react-page-builder/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "source": "./src/index.ts",
       "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.cjs"
     },
     "./styles": "./src/styles/base.css"
   },

@@ -21,6 +21,13 @@ export interface GridLayoutProps {
    * Default: 768. Set to 0 to disable responsive stacking.
    */
   mobileBreakpoint?: number;
+  /**
+   * Viewport width (px) above `mobileBreakpoint` and below this value where columns are
+   * limited to a maximum of 2 per row (tablet layout). Default: 0 (disabled).
+   * Example: mobileBreakpoint=640, tabletBreakpoint=1024 → three ranges:
+   *   < 640px = single column, 640–1023px = max 2 columns, ≥ 1024px = full layout.
+   */
+  tabletBreakpoint?: number;
   className?: string;
   style?: React.CSSProperties;
 }

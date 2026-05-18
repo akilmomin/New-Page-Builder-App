@@ -1,4 +1,4 @@
-import type { ILayoutData } from "page-builder-core";
+import type { ILayoutData } from "react-page-builder";
 
 /**
  * Initial page layout in the flat ILayoutData[] format.
