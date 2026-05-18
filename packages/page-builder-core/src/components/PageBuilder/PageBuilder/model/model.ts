@@ -105,6 +105,17 @@ export interface PageBuilderProps {
    *   < 640: single column, 640–1023: 2-column, ≥ 1024: full layout.
    */
   tabletBreakpoint?: number;
+  /**
+   * Maximum columns per row when the viewport is in the tablet range.
+   * Default: 2. Only applies when `tabletBreakpoint` is set.
+   * Set to 3 to allow 3-column layouts at tablet width instead of always collapsing to 2.
+   */
+  tabletMaxColumnsPerRow?: number;
+  /**
+   * Maximum number of columns rendered per row at desktop width. Default: 4.
+   * Raise to 6 for icon grids, product cards, or any layout needing more columns.
+   */
+  maxColumnsPerRow?: number;
 
   // ── History ───────────────────────────────────────────────────────────────
   /**

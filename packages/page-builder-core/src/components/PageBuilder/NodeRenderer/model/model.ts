@@ -28,8 +28,12 @@ export interface NodeRendererContext {
 
   /** Viewport width (px) below which grid columns stack. Default: 768. */
   mobileBreakpoint: number;
-  /** Viewport width (px) above mobileBreakpoint where columns are limited to 2 per row. Default: 0 (disabled). */
+  /** Viewport width (px) above mobileBreakpoint where columns enter tablet layout. Default: 0 (disabled). */
   tabletBreakpoint: number;
+  /** Maximum columns per row in tablet layout. Default: 2. */
+  tabletMaxColumnsPerRow: number;
+  /** Maximum columns per row at desktop width. Default: 4. */
+  maxColumnsPerRow: number;
 
   // ── render-prop overrides ─────────────────────────────────────────────────
   renderLayoutPicker?: (props: LayoutPickerRenderProps) => React.ReactNode;

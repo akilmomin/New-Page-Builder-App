@@ -5,7 +5,7 @@ import type { GridLayoutProps } from "./model/model";
 import type { IGridItem } from "../../models/pageBuilder";
 import { useLayout } from "./hook/useLayout";
 
-const MAX_COLS_PER_ROW = 4;
+const DEFAULT_MAX_COLS_PER_ROW = 4;
 
 const spanToPercent = (span: number): string => `${((span / 12) * 100).toFixed(4)}%`;
 
@@ -30,6 +30,8 @@ export const GridLayout: React.FC<GridLayoutProps> = ({
   componentGapPx = 0,
   mobileBreakpoint = 768,
   tabletBreakpoint = 0,
+  tabletMaxColumnsPerRow = 2,
+  maxColumnsPerRow = DEFAULT_MAX_COLS_PER_ROW,
   className,
   style,
 }) => {
@@ -70,27 +72,28 @@ export const GridLayout: React.FC<GridLayoutProps> = ({
     );
   }
 
-  // ── Tablet: max 2 columns per row, each 50% width ────────────────────────────
+  // ── Tablet: max tabletMaxColumnsPerRow columns per row ───────────────────────
   if (isTablet) {
-    const pairs: (typeof allColumns)[] = [];
-    for (let i = 0; i < allColumns.length; i += 2) {
-      pairs.push(allColumns.slice(i, i + 2));
+    const colPct = `${(100 / tabletMaxColumnsPerRow).toFixed(4)}%`;
+    const chunks: (typeof allColumns)[] = [];
+    for (let i = 0; i < allColumns.length; i += tabletMaxColumnsPerRow) {
+      chunks.push(allColumns.slice(i, i + tabletMaxColumnsPerRow));
     }
     return (
       <div className={className} style={style} data-pb-grid-layout>
-        {pairs.map((pair, pairIdx) => (
+        {chunks.map((chunk, chunkIdx) => (
           <div
-            key={pairIdx}
+            key={chunkIdx}
             style={{
               display: "flex",
-              margin: `${pairIdx > 0 ? rowGap : 0}px -${gapPx / 2}px 0`,
+              margin: `${chunkIdx > 0 ? rowGap : 0}px -${gapPx / 2}px 0`,
             }}
           >
-            {pair.map((col) => (
+            {chunk.map((col) => (
               <div
                 key={col.colIndex}
                 data-pb-col={col.colIndex}
-                style={{ flex: "0 0 50%", maxWidth: "50%", padding: `0 ${gapPx / 2}px`, boxSizing: "border-box" }}
+                style={{ flex: `0 0 ${colPct}`, maxWidth: colPct, padding: `0 ${gapPx / 2}px`, boxSizing: "border-box" }}
               >
                 {col.items.map((item, itemIdx) => (
                   <div
@@ -111,7 +114,7 @@ export const GridLayout: React.FC<GridLayoutProps> = ({
 
   // ── Desktop: flex rows with proportional percentage widths ──────────────────
   const rows = allColumns.reduce<IGridItem[][]>((acc, col, i) => {
-    const rowIdx = Math.floor(i / MAX_COLS_PER_ROW);
+    const rowIdx = Math.floor(i / maxColumnsPerRow);
     if (!acc[rowIdx]) acc[rowIdx] = [];
     acc[rowIdx].push(col);
     return acc;
@@ -128,7 +131,7 @@ export const GridLayout: React.FC<GridLayoutProps> = ({
           }}
         >
           {rowCols.map((col, posInRow) => {
-            const overallIndex = rowIndex * MAX_COLS_PER_ROW + posInRow;
+            const overallIndex = rowIndex * maxColumnsPerRow + posInRow;
             const span = columnSpans?.[overallIndex] ?? Math.ceil(12 / rowCols.length);
             const pct = spanToPercent(span);
 

@@ -100,6 +100,8 @@ export function PageBuilderApp() {
             setCanRedo(canRedo);
           }}
           spacing={16}
+          tabletMaxColumnsPerRow={3}
+          maxColumnsPerRow={3}
         />
       </div>
     </div>
