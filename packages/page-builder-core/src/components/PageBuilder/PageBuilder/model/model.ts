@@ -46,6 +46,11 @@ export interface PageBuilderHandle {
   undo: () => void;
   /** Step forward one action in the history stack. No-op when nothing to redo. */
   redo: () => void;
+  /**
+   * Merge `patch` into the `componentProps` of the component identified by `nodeId`.
+   * Use this from an external settings panel to update the selected component's props.
+   */
+  updateComponentProps: (nodeId: string, patch: Record<string, unknown>) => void;
 }
 
 export interface PageBuilderProps {
@@ -116,6 +121,25 @@ export interface PageBuilderProps {
    * Raise to 6 for icon grids, product cards, or any layout needing more columns.
    */
   maxColumnsPerRow?: number;
+
+  // ── Component selection ────────────────────────────────────────────────────
+  /**
+   * Called whenever the active component changes.
+   * `nodeId` and `componentName` are null when the selection is cleared.
+   * Use this to drive an external settings panel — read `props` to populate
+   * your fields, then call `ref.current.updateComponentProps(nodeId, patch)`
+   * to write changes back.
+   *
+   * @example
+   * onComponentSelect={(nodeId, componentName, props) =>
+   *   setSelected(nodeId ? { nodeId, componentName, props } : null)
+   * }
+   */
+  onComponentSelect?: (
+    nodeId: string | null,
+    componentName: string | null,
+    props: Record<string, unknown>,
+  ) => void;
 
   // ── History ───────────────────────────────────────────────────────────────
   /**

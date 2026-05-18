@@ -25,6 +25,7 @@ export interface NodeRendererContext {
   onDeleteNode: (id: string) => void;
   onCloneNode: (id: string) => void;
   onChangeLayout: (sectionId: string, columns: readonly number[]) => void;
+  onUpdateComponentProps: (nodeId: string, patch: Record<string, unknown>) => void;
 
   /** Viewport width (px) below which grid columns stack. Default: 768. */
   mobileBreakpoint: number;

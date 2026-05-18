@@ -4,11 +4,13 @@ import { useState } from "react";
 import { PageBuilderApp } from "@/components/PageBuilderApp";
 import { PageBuilderApp2 } from "@/components/PageBuilderApp2";
 import { PageBuilderApp3 } from "@/components/PageBuilderApp3";
+import { PageBuilderApp4 } from "@/components/PageBuilderApp4";
 
 const TABS = [
   { id: "1", label: "Default Builder", description: "Standard built-in UI" },
   { id: "2", label: "Custom UI Builder", description: "All render props wired" },
-  { id: "3", label: "Form Builder", description: "Dynamic form with inputs" },
+  { id: "3", label: "Form Builder", description: "Inline edit UI in components" },
+  { id: "4", label: "Form Builder (Panel)", description: "Caller-owned side panel" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -47,6 +49,9 @@ export default function Home() {
       </div>
       <div className={activeTab === "3" ? "" : "hidden"}>
         <PageBuilderApp3 />
+      </div>
+      <div className={activeTab === "4" ? "" : "hidden"}>
+        <PageBuilderApp4 />
       </div>
     </div>
   );

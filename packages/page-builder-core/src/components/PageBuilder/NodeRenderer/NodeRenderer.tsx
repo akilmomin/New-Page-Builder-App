@@ -317,7 +317,13 @@ const ComponentItem: React.FC<{
         cursor: ctx.isEditMode ? "pointer" : "default",
       }}
     >
-      <Component {...(node.componentProps as object)} editMode={ctx.isEditMode} />
+      <Component
+        {...(node.componentProps as object)}
+        editMode={ctx.isEditMode}
+        onPropsChange={(patch: Record<string, unknown>) =>
+          ctx.onUpdateComponentProps(node.uniqueId, patch)
+        }
+      />
       {ctx.isEditMode && isActive && (
         ctx.renderComponentControls ? (
           ctx.renderComponentControls({

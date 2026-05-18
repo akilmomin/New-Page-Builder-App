@@ -7,6 +7,7 @@ import {
   deleteNodeById,
   cloneNodeById,
   changeSectionLayout,
+  updateComponentPropsById,
 } from "../../../../utils/treeOps";
 import {
   layoutDataToNodes,
@@ -28,7 +29,8 @@ type TreeAction =
   | { type: "CHANGE_LAYOUT"; sectionId: string; columns: readonly number[] }
   | { type: "DELETE"; nodeId: string }
   | { type: "CLONE"; nodeId: string }
-  | { type: "SET_NODES"; nodes: readonly PageNode[] };
+  | { type: "SET_NODES"; nodes: readonly PageNode[] }
+  | { type: "UPDATE_COMPONENT_PROPS"; nodeId: string; patch: Record<string, unknown> };
 
 type UiAction =
   | { type: "SET_ACTIVE_SECTION"; id: string | null }
@@ -108,6 +110,9 @@ const reducer = (state: State, action: Action): State => {
 
     case "CLONE":
       return { ...state, nodes: cloneNodeById(state.nodes)(action.nodeId) };
+
+    case "UPDATE_COMPONENT_PROPS":
+      return { ...state, nodes: updateComponentPropsById(state.nodes, action.nodeId, action.patch) };
 
     case "SET_NODES":
       return { ...state, nodes: action.nodes };
@@ -257,6 +262,12 @@ export const usePageBuilder = ({
     [dispatchTree],
   );
 
+  const updateComponentProps = useCallback(
+    (nodeId: string, patch: Record<string, unknown>) =>
+      dispatchTree({ type: "UPDATE_COMPONENT_PROPS", nodeId, patch }),
+    [dispatchTree],
+  );
+
   // ── Undo / Redo ─────────────────────────────────────────────────────────────
 
   const undo = useCallback(() => {
@@ -326,6 +337,7 @@ export const usePageBuilder = ({
     changeLayout,
     deleteNode,
     cloneNode,
+    updateComponentProps,
     setNodes,
     resetLayout,
     setActiveSection,

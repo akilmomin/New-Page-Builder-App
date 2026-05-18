@@ -142,6 +142,32 @@ export const addComponentToNode = (
   });
 };
 
+/** Merge `patch` into the `componentProps` of the Component node identified by `nodeId`. */
+export const updateComponentPropsById = (
+  nodes: readonly PageNode[],
+  nodeId: string,
+  patch: Record<string, unknown>,
+): readonly PageNode[] =>
+  mapTree(nodes, (node) => {
+    if (node.uniqueId !== nodeId) return node;
+    return { ...node, componentProps: { ...(node.componentProps ?? {}), ...patch } };
+  });
+
+/** Find a node by uniqueId anywhere in the tree. Returns undefined if not found. */
+export const findNodeById = (
+  nodes: readonly PageNode[],
+  nodeId: string,
+): PageNode | undefined => {
+  for (const node of nodes) {
+    if (node.uniqueId === nodeId) return node;
+    if (node.children) {
+      const found = findNodeById(node.children, nodeId);
+      if (found) return found;
+    }
+  }
+  return undefined;
+};
+
 /** Delete the node identified by `nodeId`. */
 export const deleteNodeById = (nodes: readonly PageNode[], nodeId: string): readonly PageNode[] =>
   filterTree(nodes, nodeId);

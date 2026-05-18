@@ -4,71 +4,38 @@ import React from "react";
 
 interface BannerProps {
   readonly editMode?: boolean;
+  readonly onPropsChange?: (patch: Record<string, unknown>) => void;
+  readonly heading?: string;
+  readonly subheading?: string;
+  readonly gradient?: "blue" | "purple" | "teal" | "rose" | "amber";
 }
 
-const SLIDES = [
-  {
-    id: 1,
-    title: "Welcome to the Page Builder",
-    subtitle: "Drag, drop and build pages effortlessly",
-    bg: "from-blue-600 to-blue-800",
-  },
-  {
-    id: 2,
-    title: "Powerful Layout System",
-    subtitle: "Responsive grids inspired by Cosine UI",
-    bg: "from-indigo-600 to-purple-700",
-  },
-  {
-    id: 3,
-    title: "Component Library",
-    subtitle: "News, Events, Quick Tiles and more",
-    bg: "from-teal-600 to-cyan-700",
-  },
-] as const;
+const GRADIENTS: Record<string, string> = {
+  blue:   "from-blue-600 to-blue-800",
+  purple: "from-indigo-600 to-purple-700",
+  teal:   "from-teal-600 to-cyan-700",
+  rose:   "from-rose-500 to-pink-700",
+  amber:  "from-amber-500 to-orange-600",
+};
 
-export const Banner: React.FC<BannerProps> = ({ editMode = false }) => {
-  const [activeIndex, setActiveIndex] = React.useState(0);
-
-  React.useEffect(() => {
-    if (editMode) return;
-    const interval = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % SLIDES.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [editMode]);
-
-  const activeSlide = SLIDES[activeIndex];
+export const Banner: React.FC<BannerProps> = ({
+  editMode = false,
+  heading = "Welcome to the Page Builder",
+  subheading = "Build pages effortlessly with a drag-and-drop layout system",
+  gradient = "blue",
+}) => {
+  const bgClass = GRADIENTS[gradient] ?? GRADIENTS.blue;
 
   return (
     <div className="relative w-full h-[260px] overflow-hidden rounded-xl shadow-card">
-      <div
-        className={`absolute inset-0 bg-gradient-to-br ${activeSlide.bg} transition-all duration-700`}
-      />
+      <div className={`absolute inset-0 bg-gradient-to-br ${bgClass} transition-all duration-700`} />
       <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-8">
-        <h2 className="text-3xl font-bold mb-2 drop-shadow">{activeSlide.title}</h2>
-        <p className="text-lg opacity-90">{activeSlide.subtitle}</p>
+        <h2 className="text-3xl font-bold mb-2 drop-shadow">{heading}</h2>
+        <p className="text-lg opacity-90">{subheading}</p>
       </div>
-
-      {/* Dot indicators */}
-      <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-10">
-        {SLIDES.map((slide, i) => (
-          <button
-            key={slide.id}
-            onClick={() => setActiveIndex(i)}
-            className={`w-2.5 h-2.5 rounded-full transition-all ${
-              i === activeIndex ? "bg-white scale-110" : "bg-white/50"
-            }`}
-            aria-label={`Go to slide ${i + 1}`}
-          />
-        ))}
-      </div>
-
       {editMode && (
         <div className="absolute inset-0 bg-black/10 flex items-center justify-center z-20">
-          <span className="bg-black/40 text-white text-sm px-3 py-1 rounded-full">
-            Banner (Edit Mode)
-          </span>
+          <span className="bg-black/40 text-white text-sm px-3 py-1 rounded-full">Banner</span>
         </div>
       )}
     </div>

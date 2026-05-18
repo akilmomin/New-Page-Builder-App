@@ -5,6 +5,7 @@ import { LAYOUT_PRESETS } from "../../../models/pageBuilder";
 import type { PageBuilderProps, PageBuilderHandle } from "./model/model";
 import { usePageBuilder } from "./hook/usePageBuilder";
 import { serializeLayout, nodesToLayoutData } from "../../../utils/layoutDataOps";
+import { findNodeById } from "../../../utils/treeOps";
 import { NodeRenderer } from "../NodeRenderer";
 import { LayoutPicker } from "../LayoutPicker";
 
@@ -25,6 +26,7 @@ export const PageBuilder = forwardRef<PageBuilderHandle, PageBuilderProps>(
       maxHistorySize,
       onSaveChange,
       onHistoryChange,
+      onComponentSelect,
       renderAddTrigger,
       renderLayoutPicker,
       renderComponentPicker,
@@ -44,6 +46,7 @@ export const PageBuilder = forwardRef<PageBuilderHandle, PageBuilderProps>(
       save: () => handleSave?.(),
       undo: pb.undo,
       redo: pb.redo,
+      updateComponentProps: pb.updateComponentProps,
     }));
 
     // Notify caller when undo/redo availability changes
@@ -52,6 +55,23 @@ export const PageBuilder = forwardRef<PageBuilderHandle, PageBuilderProps>(
     useEffect(() => {
       onHistoryChangeRef.current?.({ canUndo: pb.canUndo, canRedo: pb.canRedo });
     }, [pb.canUndo, pb.canRedo]);
+
+    // Notify caller when active component changes
+    const onComponentSelectRef = useRef(onComponentSelect);
+    onComponentSelectRef.current = onComponentSelect;
+    useEffect(() => {
+      if (!onComponentSelectRef.current) return;
+      if (!pb.activeComponentId) {
+        onComponentSelectRef.current(null, null, {});
+        return;
+      }
+      const node = findNodeById(pb.nodes, pb.activeComponentId);
+      onComponentSelectRef.current(
+        pb.activeComponentId,
+        node?.componentName ?? null,
+        (node?.componentProps as Record<string, unknown>) ?? {},
+      );
+    }, [pb.activeComponentId, pb.nodes]);
 
     // Keyboard shortcuts: Ctrl/Cmd+Z = undo, Ctrl/Cmd+Y or Ctrl/Cmd+Shift+Z = redo
     useEffect(() => {
@@ -82,6 +102,7 @@ export const PageBuilder = forwardRef<PageBuilderHandle, PageBuilderProps>(
       onChangeLayout: pb.changeLayout,
       onDeleteNode: pb.deleteNode,
       onCloneNode: pb.cloneNode,
+      onUpdateComponentProps: pb.updateComponentProps,
       mobileBreakpoint,
       tabletBreakpoint,
       tabletMaxColumnsPerRow,
