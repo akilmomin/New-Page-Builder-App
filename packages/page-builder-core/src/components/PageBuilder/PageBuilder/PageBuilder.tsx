@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useImperativeHandle, forwardRef } from "react";
+import React, { useEffect, useImperativeHandle, useRef, forwardRef } from "react";
 import { LAYOUT_PRESETS } from "../../../models/pageBuilder";
 import type { PageBuilderProps, PageBuilderHandle } from "./model/model";
 import { usePageBuilder } from "./hook/usePageBuilder";
@@ -20,7 +20,9 @@ export const PageBuilder = forwardRef<PageBuilderHandle, PageBuilderProps>(
       spacing = 8,
       mobileBreakpoint = 768,
       tabletBreakpoint = 0,
+      maxHistorySize,
       onSaveChange,
+      onHistoryChange,
       renderAddTrigger,
       renderLayoutPicker,
       renderComponentPicker,
@@ -31,15 +33,35 @@ export const PageBuilder = forwardRef<PageBuilderHandle, PageBuilderProps>(
     },
     ref,
   ) => {
-    const pb = usePageBuilder({ value, onChange, defaultValue, editMode, onEditModeChange });
+    const pb = usePageBuilder({ value, onChange, defaultValue, editMode, onEditModeChange, maxHistorySize });
 
-    const handleSave =  () => onSaveChange?.(serializeLayout(nodesToLayoutData(pb.nodes)))
-    
+    const handleSave = () => onSaveChange?.(serializeLayout(nodesToLayoutData(pb.nodes)));
 
     useImperativeHandle(ref, () => ({
       reset: pb.resetLayout,
       save: () => handleSave?.(),
+      undo: pb.undo,
+      redo: pb.redo,
     }));
+
+    // Notify caller when undo/redo availability changes
+    const onHistoryChangeRef = useRef(onHistoryChange);
+    onHistoryChangeRef.current = onHistoryChange;
+    useEffect(() => {
+      onHistoryChangeRef.current?.({ canUndo: pb.canUndo, canRedo: pb.canRedo });
+    }, [pb.canUndo, pb.canRedo]);
+
+    // Keyboard shortcuts: Ctrl/Cmd+Z = undo, Ctrl/Cmd+Y or Ctrl/Cmd+Shift+Z = redo
+    useEffect(() => {
+      if (!pb.isEditMode) return;
+      const handleKeyDown = (e: KeyboardEvent) => {
+        const mod = e.ctrlKey || e.metaKey;
+        if (mod && e.key === "z" && !e.shiftKey) { e.preventDefault(); pb.undo(); }
+        if (mod && (e.key === "y" || (e.key === "z" && e.shiftKey))) { e.preventDefault(); pb.redo(); }
+      };
+      document.addEventListener("keydown", handleKeyDown);
+      return () => document.removeEventListener("keydown", handleKeyDown);
+    }, [pb.isEditMode, pb.undo, pb.redo]);
 
     const ctx = {
       isEditMode: pb.isEditMode,

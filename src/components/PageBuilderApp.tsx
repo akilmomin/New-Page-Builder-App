@@ -29,11 +29,11 @@ const components: ComponentDefinition[] = [
 export function PageBuilderApp() {
   const builderRef = useRef<PageBuilderHandle>(null);
   const [editMode, setEditMode] = useState(false);
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
 
   const handleSave = (layout: SerializableLayoutItem[]) => {
     console.log("Saved layout:", layout);
-    // replace with your actual persistence call:
-    // fetch('/api/save', { method: 'POST', body: JSON.stringify(layout) })
   };
 
   return (
@@ -58,7 +58,27 @@ export function PageBuilderApp() {
           {editMode ? "Done Editing" : "Edit"}
         </button>
 
-        {/* Save is triggered via ref.current.save() → calls onSaveChange inside PageBuilder */}
+        {editMode && (
+          <>
+            <button
+              onClick={() => builderRef.current?.undo()}
+              disabled={!canUndo}
+              className="px-3 py-1.5 text-sm border border-gray-300 rounded cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed hover:enabled:bg-gray-50"
+              title="Undo (Ctrl+Z)"
+            >
+              ↩ Undo
+            </button>
+            <button
+              onClick={() => builderRef.current?.redo()}
+              disabled={!canRedo}
+              className="px-3 py-1.5 text-sm border border-gray-300 rounded cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed hover:enabled:bg-gray-50"
+              title="Redo (Ctrl+Y)"
+            >
+              ↪ Redo
+            </button>
+          </>
+        )}
+
         <button
           onClick={() => builderRef.current?.save()}
           className="ml-auto px-3 py-1.5 text-sm bg-green-600 text-white border border-green-600 rounded hover:bg-green-700 cursor-pointer"
@@ -66,17 +86,22 @@ export function PageBuilderApp() {
           Save
         </button>
       </div>
-<div style={{padding:8}}>
-      <PageBuilder
-        ref={builderRef}
-        components={components}
-        defaultValue={initialLayout}
-        editMode={editMode}
-        onEditModeChange={setEditMode}
-        onSaveChange={handleSave}
-        spacing={16}
-      />
-    </div>
+
+      <div style={{ padding: 8 }}>
+        <PageBuilder
+          ref={builderRef}
+          components={components}
+          defaultValue={initialLayout}
+          editMode={editMode}
+          onEditModeChange={setEditMode}
+          onSaveChange={handleSave}
+          onHistoryChange={({ canUndo, canRedo }) => {
+            setCanUndo(canUndo);
+            setCanRedo(canRedo);
+          }}
+          spacing={16}
+        />
+      </div>
     </div>
   );
 }

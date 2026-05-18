@@ -42,6 +42,10 @@ export interface PageBuilderHandle {
    * No-op when `onSaveChange` is not provided.
    */
   save: () => void;
+  /** Step back one action in the history stack. No-op when nothing to undo. */
+  undo: () => void;
+  /** Step forward one action in the history stack. No-op when nothing to redo. */
+  redo: () => void;
 }
 
 export interface PageBuilderProps {
@@ -101,6 +105,18 @@ export interface PageBuilderProps {
    *   < 640: single column, 640–1023: 2-column, ≥ 1024: full layout.
    */
   tabletBreakpoint?: number;
+
+  // ── History ───────────────────────────────────────────────────────────────
+  /**
+   * Maximum number of undo steps to retain. Older entries are dropped first.
+   * Default: 50.
+   */
+  maxHistorySize?: number;
+  /**
+   * Called whenever the undo/redo availability changes (after any mutation, undo, or redo).
+   * Use this to enable/disable undo/redo buttons in an external toolbar.
+   */
+  onHistoryChange?: (state: { canUndo: boolean; canRedo: boolean }) => void;
 
   // ── Styling ────────────────────────────────────────────────────────────────
   classNames?: PageBuilderClassNames;

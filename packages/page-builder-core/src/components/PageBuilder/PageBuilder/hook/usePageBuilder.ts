@@ -1,4 +1,4 @@
-import { useCallback, useReducer, useRef } from "react";
+import { useCallback, useReducer, useRef, useState } from "react";
 import type { ILayoutData, PageNode, SerializableLayoutItem } from "../../../../models/pageBuilder";
 import {
   addSectionToNode,
@@ -149,6 +149,8 @@ interface Options {
   defaultValue?: ILayoutData[];
   editMode?: boolean;
   onEditModeChange?: (isEdit: boolean) => void;
+  /** Maximum number of undo steps to retain. Default: 50. */
+  maxHistorySize?: number;
 }
 
 export const usePageBuilder = ({
@@ -157,8 +159,10 @@ export const usePageBuilder = ({
   defaultValue,
   editMode: controlledEditMode,
   onEditModeChange,
+  maxHistorySize,
 }: Options = {}) => {
   const isControlled = value !== undefined;
+  const maxHistory = maxHistorySize ?? 50;
 
   // Internal state always uses PageNode[] for the builder engine.
   const [state, dispatch] = useReducer(reducer, makeInitial(defaultValue));
@@ -169,18 +173,54 @@ export const usePageBuilder = ({
   // In controlled mode, derive nodes from the external ILayoutData[].
   const nodes = isControlled ? layoutDataToNodes(value) : state.nodes;
 
+  // ── History tracking ────────────────────────────────────────────────────────
+  // Stored in refs to avoid extra re-renders; only canUndo/canRedo are state.
+  const initialNodes = defaultValue ? layoutDataToNodes(defaultValue) : [];
+  const historyRef = useRef<readonly (readonly PageNode[])[]>([initialNodes]);
+  const cursorRef = useRef<number>(0);
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
+
+  const pushHistory = useCallback(
+    (nextNodes: readonly PageNode[]) => {
+      // Truncate any redo entries beyond the current cursor, then append
+      const base = historyRef.current.slice(0, cursorRef.current + 1);
+      historyRef.current = [...base, nextNodes].slice(-maxHistory);
+      cursorRef.current = historyRef.current.length - 1;
+      setCanUndo(cursorRef.current > 0);
+      setCanRedo(false);
+    },
+    [maxHistory],
+  );
+
+  // ── setNodes (shared by undo/redo/reset) ────────────────────────────────────
+  const setNodes = useCallback(
+    (nextNodes: readonly PageNode[]) => {
+      if (isControlled) {
+        onChangeRef.current?.(serializeLayout(nodesToLayoutData(nextNodes)));
+      } else {
+        dispatch({ type: "SET_NODES", nodes: nextNodes });
+      }
+    },
+    [isControlled],
+  );
+
+  // ── dispatchTree — all layout mutations go through here ────────────────────
   const dispatchTree = useCallback(
     (action: TreeAction) => {
+      const currentNodes = isControlled ? layoutDataToNodes(value ?? []) : state.nodes;
+      // Use reducer as a pure function to compute nextNodes synchronously
+      const nextNodes = reducer({ ...state, nodes: currentNodes }, action).nodes;
+
       if (isControlled) {
-        const currentNodes = layoutDataToNodes(value ?? []);
-        const nextState = reducer({ ...state, nodes: currentNodes }, action);
-        onChangeRef.current?.(serializeLayout(nodesToLayoutData(nextState.nodes)));
+        onChangeRef.current?.(serializeLayout(nodesToLayoutData(nextNodes)));
       } else {
         dispatch(action);
       }
+
+      pushHistory(nextNodes);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isControlled, state, value],
+    [isControlled, state, value, pushHistory],
   );
 
   const addSection = useCallback(
@@ -217,16 +257,37 @@ export const usePageBuilder = ({
     [dispatchTree],
   );
 
-  const setNodes = useCallback(
-    (nodes: readonly PageNode[]) => {
-      if (isControlled) {
-        onChangeRef.current?.(serializeLayout(nodesToLayoutData(nodes)));
-      } else {
-        dispatch({ type: "SET_NODES", nodes });
-      }
-    },
-    [isControlled],
-  );
+  // ── Undo / Redo ─────────────────────────────────────────────────────────────
+
+  const undo = useCallback(() => {
+    if (cursorRef.current <= 0) return;
+    cursorRef.current -= 1;
+    const prevNodes = historyRef.current[cursorRef.current];
+    setNodes(prevNodes);
+    setCanUndo(cursorRef.current > 0);
+    setCanRedo(true);
+  }, [setNodes]);
+
+  const redo = useCallback(() => {
+    if (cursorRef.current >= historyRef.current.length - 1) return;
+    cursorRef.current += 1;
+    const nextNodes = historyRef.current[cursorRef.current];
+    setNodes(nextNodes);
+    setCanUndo(true);
+    setCanRedo(cursorRef.current < historyRef.current.length - 1);
+  }, [setNodes]);
+
+  // ── Reset — clears history ──────────────────────────────────────────────────
+
+  const resetLayout = useCallback(() => {
+    historyRef.current = [[]];
+    cursorRef.current = 0;
+    setCanUndo(false);
+    setCanRedo(false);
+    setNodes([]);
+  }, [setNodes]);
+
+  // ── UI state actions ────────────────────────────────────────────────────────
 
   const setActiveSection = useCallback(
     (id: string | null) => dispatch({ type: "SET_ACTIVE_SECTION", id }),
@@ -250,8 +311,6 @@ export const usePageBuilder = ({
     }
   }, [controlledEditMode, onEditModeChange]);
 
-  const resetLayout = useCallback(() => setNodes([]), [setNodes]);
-
   const isEditMode = controlledEditMode !== undefined ? controlledEditMode : state.isEditMode;
 
   return {
@@ -274,5 +333,9 @@ export const usePageBuilder = ({
     setPopUp,
     setShowSection,
     toggleEditMode,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
   };
 };
