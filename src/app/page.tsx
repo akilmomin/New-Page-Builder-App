@@ -5,12 +5,14 @@ import { PageBuilderApp } from "@/components/PageBuilderApp";
 import { PageBuilderApp2 } from "@/components/PageBuilderApp2";
 import { PageBuilderApp3 } from "@/components/PageBuilderApp3";
 import { PageBuilderApp4 } from "@/components/PageBuilderApp4";
+import { PageBuilderApp5 } from "@/components/PageBuilderApp5";
 
 const TABS = [
-  { id: "1", label: "Default Builder", description: "Standard built-in UI" },
-  { id: "2", label: "Custom UI Builder", description: "All render props wired" },
-  { id: "3", label: "Form Builder", description: "Inline edit UI in components" },
+  { id: "1", label: "Default Builder",      description: "Standard built-in UI" },
+  { id: "2", label: "Custom UI Builder",    description: "All render props wired" },
+  { id: "3", label: "Form Builder",         description: "Inline edit UI in components" },
   { id: "4", label: "Form Builder (Panel)", description: "Caller-owned side panel" },
+  { id: "5", label: "DnD Reorder",          description: "External drag-and-drop via dnd-kit" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -52,6 +54,9 @@ export default function Home() {
       </div>
       <div className={activeTab === "4" ? "" : "hidden"}>
         <PageBuilderApp4 />
+      </div>
+      <div className={activeTab === "5" ? "" : "hidden"}>
+        <PageBuilderApp5 />
       </div>
     </div>
   );

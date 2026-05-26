@@ -26,6 +26,7 @@ export type {
   ComponentPickerRenderProps,
   SectionControlsRenderProps,
   ComponentControlsRenderProps,
+  SectionWrapperRenderProps,
 } from "./models/pageBuilder";
 
 export type { PageBuilderProps, PageBuilderClassNames, PageBuilderHandle } from "./components/PageBuilder";

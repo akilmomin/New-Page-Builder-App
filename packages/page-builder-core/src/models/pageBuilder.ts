@@ -91,6 +91,12 @@ export interface ComponentControlsRenderProps {
   onDelete: () => void;
 }
 
+export interface SectionWrapperRenderProps {
+  /** The section's unique node ID — use as the sortable/draggable item ID. */
+  nodeId: string;
+  children: React.ReactNode;
+}
+
 // ─── ILayoutData (public data-driven grid format) ────────────────────────────
 
 export interface ILayoutData {

@@ -124,7 +124,7 @@ const SectionItem: React.FC<NodeItemProps> = ({ node, index, components, ctx, pa
     );
   };
 
-  return (
+  const sectionContent = (
     // Outer wrapper owns the hover — controls are inside it so mouse stays "in bounds"
     <div
       style={{ position: "relative", marginBottom: ctx.spacing }}
@@ -213,6 +213,10 @@ const SectionItem: React.FC<NodeItemProps> = ({ node, index, components, ctx, pa
       )}
     </div>
   );
+
+  return ctx.renderSectionWrapper
+    ? <>{ctx.renderSectionWrapper({ nodeId: node.uniqueId, children: sectionContent })}</>
+    : sectionContent;
 };
 
 // ─── SubSection ──────────────────────────────────────────────────────────────

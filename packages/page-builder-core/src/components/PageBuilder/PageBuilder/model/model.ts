@@ -10,6 +10,7 @@ import type {
   ComponentPickerRenderProps,
   SectionControlsRenderProps,
   ComponentControlsRenderProps,
+  SectionWrapperRenderProps,
 } from "../../../../models/pageBuilder";
 
 export interface PageBuilderClassNames {
@@ -51,6 +52,19 @@ export interface PageBuilderHandle {
    * Use this from an external settings panel to update the selected component's props.
    */
   updateComponentProps: (nodeId: string, patch: Record<string, unknown>) => void;
+  /**
+   * Replace the entire layout from a serializable ILayoutData array.
+   * Use this after an external drag-and-drop reorder — the builder applies it
+   * as a single history entry so Ctrl+Z undoes the move.
+   *
+   * @example
+   * // dnd-kit drag end handler — no DnD code lives in this package
+   * const handleDragEnd = ({ active, over }) => {
+   *   const next = reorderSections(currentLayout, active.id, over.id);
+   *   ref.current?.setLayout(next);
+   * };
+   */
+  setLayout: (items: SerializableLayoutItem[]) => void;
 }
 
 export interface PageBuilderProps {
@@ -96,6 +110,7 @@ export interface PageBuilderProps {
   renderComponentPicker?: (props: ComponentPickerRenderProps) => React.ReactNode;
   renderSectionControls?: (props: SectionControlsRenderProps) => React.ReactNode;
   renderComponentControls?: (props: ComponentControlsRenderProps) => React.ReactNode;
+  renderSectionWrapper?: (props: SectionWrapperRenderProps) => React.ReactNode;
 
   // ── Responsive ────────────────────────────────────────────────────────────
   /**

@@ -268,6 +268,16 @@ export const usePageBuilder = ({
     [dispatchTree],
   );
 
+  // ── setLayout — caller-driven full layout replacement (e.g. after external DnD) ──
+  const setLayout = useCallback(
+    (items: SerializableLayoutItem[]) => {
+      const nextNodes = layoutDataToNodes(items as ILayoutData[]);
+      pushHistory(nextNodes);
+      setNodes(nextNodes);
+    },
+    [pushHistory, setNodes],
+  );
+
   // ── Undo / Redo ─────────────────────────────────────────────────────────────
 
   const undo = useCallback(() => {
@@ -338,6 +348,7 @@ export const usePageBuilder = ({
     deleteNode,
     cloneNode,
     updateComponentProps,
+    setLayout,
     setNodes,
     resetLayout,
     setActiveSection,
