@@ -27,6 +27,7 @@ export type {
   SectionControlsRenderProps,
   ComponentControlsRenderProps,
   SectionWrapperRenderProps,
+  SubSectionWrapperRenderProps,
 } from "./models/pageBuilder";
 
 export type { PageBuilderProps, PageBuilderClassNames, PageBuilderHandle } from "./components/PageBuilder";

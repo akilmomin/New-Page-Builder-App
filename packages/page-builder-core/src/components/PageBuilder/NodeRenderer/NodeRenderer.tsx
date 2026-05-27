@@ -215,7 +215,7 @@ const SectionItem: React.FC<NodeItemProps> = ({ node, index, components, ctx, pa
   );
 
   return ctx.renderSectionWrapper
-    ? <>{ctx.renderSectionWrapper({ nodeId: node.uniqueId, children: sectionContent })}</>
+    ? <>{ctx.renderSectionWrapper({ nodeId: node.uniqueId, index, children: sectionContent })}</>
     : sectionContent;
 };
 
@@ -230,7 +230,7 @@ const SubSectionItem: React.FC<NodeItemProps> = ({ node, components, ctx }) => {
     ctx.onSetPopUp(`add:${node.uniqueId}`);
   };
 
-  return (
+  const subSectionContent = (
     <div
       data-pb-subsection={node.uniqueId}
       style={{ minHeight: ctx.isEditMode ? 60 : undefined, boxSizing: "border-box" }}
@@ -286,6 +286,10 @@ const SubSectionItem: React.FC<NodeItemProps> = ({ node, components, ctx }) => {
       )}
     </div>
   );
+
+  return ctx.renderSubSectionWrapper
+    ? <>{ctx.renderSubSectionWrapper({ nodeId: node.uniqueId, children: subSectionContent })}</>
+    : subSectionContent;
 };
 
 // ─── Component ───────────────────────────────────────────────────────────────

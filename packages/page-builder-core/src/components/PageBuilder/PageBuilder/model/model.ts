@@ -11,6 +11,7 @@ import type {
   SectionControlsRenderProps,
   ComponentControlsRenderProps,
   SectionWrapperRenderProps,
+  SubSectionWrapperRenderProps,
 } from "../../../../models/pageBuilder";
 
 export interface PageBuilderClassNames {
@@ -37,6 +38,12 @@ export interface PageBuilderClassNames {
 export interface PageBuilderHandle {
   /** Clear all sections and components from the canvas. */
   reset: () => void;
+  /** Append a new section inside `targetId`. Pass `"__root__"` to append at the canvas level. */
+  addSection: (targetId: string, columns: readonly number[]) => void;
+  /** Insert a new section after `afterIndex` inside `parentId`. Pass `"__root__"` for canvas level. Use `afterIndex: -1` to insert before the first section. */
+  addSectionAfter: (parentId: string, afterIndex: number, columns: readonly number[]) => void;
+  /** Add a component into the column identified by `targetId`. */
+  addComponent: (targetId: string, componentName: string, componentProps?: Record<string, unknown>) => void;
   /**
    * Programmatically trigger `onSaveChange` with the current layout.
    * Use this when your Save button lives outside the PageBuilder (e.g. in an external toolbar).
@@ -111,6 +118,7 @@ export interface PageBuilderProps {
   renderSectionControls?: (props: SectionControlsRenderProps) => React.ReactNode;
   renderComponentControls?: (props: ComponentControlsRenderProps) => React.ReactNode;
   renderSectionWrapper?: (props: SectionWrapperRenderProps) => React.ReactNode;
+  renderSubSectionWrapper?: (props: SubSectionWrapperRenderProps) => React.ReactNode;
 
   // ── Responsive ────────────────────────────────────────────────────────────
   /**

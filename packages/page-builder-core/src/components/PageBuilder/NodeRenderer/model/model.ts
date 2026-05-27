@@ -5,6 +5,7 @@ import type {
   SectionControlsRenderProps,
   ComponentControlsRenderProps,
   SectionWrapperRenderProps,
+  SubSectionWrapperRenderProps,
 } from "../../../../models/pageBuilder";
 
 export interface NodeRendererContext {
@@ -43,4 +44,5 @@ export interface NodeRendererContext {
   renderSectionControls?: (props: SectionControlsRenderProps) => React.ReactNode;
   renderComponentControls?: (props: ComponentControlsRenderProps) => React.ReactNode;
   renderSectionWrapper?: (props: SectionWrapperRenderProps) => React.ReactNode;
+  renderSubSectionWrapper?: (props: SubSectionWrapperRenderProps) => React.ReactNode;
 }

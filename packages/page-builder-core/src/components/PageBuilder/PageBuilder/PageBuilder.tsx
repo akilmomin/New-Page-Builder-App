@@ -33,6 +33,7 @@ export const PageBuilder = forwardRef<PageBuilderHandle, PageBuilderProps>(
       renderSectionControls,
       renderComponentControls,
       renderSectionWrapper,
+      renderSubSectionWrapper,
       classNames = {},
       style,
     },
@@ -49,6 +50,9 @@ export const PageBuilder = forwardRef<PageBuilderHandle, PageBuilderProps>(
       redo: pb.redo,
       updateComponentProps: pb.updateComponentProps,
       setLayout: pb.setLayout,
+      addSection: pb.addSection,
+      addSectionAfter: pb.addSectionAfter,
+      addComponent: pb.addComponent,
     }));
 
     // Notify caller when undo/redo availability changes
@@ -114,6 +118,7 @@ export const PageBuilder = forwardRef<PageBuilderHandle, PageBuilderProps>(
       renderSectionControls,
       renderComponentControls,
       renderSectionWrapper,
+      renderSubSectionWrapper,
     };
 
     const handleAddRootClick = (e: React.MouseEvent) => {

@@ -94,6 +94,14 @@ export interface ComponentControlsRenderProps {
 export interface SectionWrapperRenderProps {
   /** The section's unique node ID — use as the sortable/draggable item ID. */
   nodeId: string;
+  /** Zero-based position of this section on the canvas. */
+  index: number;
+  children: React.ReactNode;
+}
+
+export interface SubSectionWrapperRenderProps {
+  /** The column's unique node ID — use as the droppable target ID. */
+  nodeId: string;
   children: React.ReactNode;
 }
 

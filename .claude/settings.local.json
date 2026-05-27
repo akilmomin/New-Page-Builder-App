@@ -36,7 +36,10 @@
       "Bash(findstr \"LISTENING\")",
       "Bash(pnpm dev *)",
       "Bash(pnpm pkg:build)",
-      "Bash(pnpm --filter react-page-builder build)"
+      "Bash(pnpm --filter react-page-builder build)",
+      "Bash(Get-ChildItem -Path \"c:\\\\workspace\\\\Projects\\\\New Page Builder App\" -Directory)",
+      "Bash(Select-Object Name)",
+      "Bash(pnpm tsc *)"
     ],
     "additionalDirectories": [
       "c:\\workspace\\Projects\\New Page Builder App\\src"
