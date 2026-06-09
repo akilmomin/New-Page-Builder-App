@@ -9,7 +9,10 @@
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "pkg:build": "pnpm --filter react-page-and-form-builder build",
-    "pkg:dev": "pnpm --filter react-page-and-form-builder dev"
+    "pkg:dev": "pnpm --filter react-page-and-form-builder dev",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "pnpm pkg:build && changeset publish"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -21,6 +24,7 @@
     "react-page-and-form-builder": "workspace:*"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.31.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
