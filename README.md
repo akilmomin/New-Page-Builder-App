@@ -1,11 +1,11 @@
-# react-page-builder — Monorepo
+# react-page-and-form-builder — Monorepo
 
-This repository contains the `react-page-builder` npm package and a Next.js development playground for it.
+This repository contains the `react-page-and-form-builder` npm package and a Next.js development playground for it.
 
 ```
 .
 ├── packages/
-│   └── page-builder-core/   ← the npm package (react-page-builder)
+│   └── page-builder-core/   ← the npm package (react-page-and-form-builder)
 └── src/                     ← Next.js demo app (not shipped)
     ├── app/
     ├── components/          ← six demo tabs, each showing a different usage pattern
@@ -63,7 +63,7 @@ The package `package.json` declares:
 "files": ["dist", "src/styles"]
 ```
 
-When someone runs `npm install react-page-builder`, they receive:
+When someone runs `npm install react-page-and-form-builder`, they receive:
 
 - `dist/index.js` — ESM build
 - `dist/index.cjs` — CommonJS build
@@ -83,7 +83,7 @@ This is a pnpm workspace. The Next.js app (`package.json` at root) consumes the 
 
 ```json
 "dependencies": {
-  "react-page-builder": "workspace:*"
+  "react-page-and-form-builder": "workspace:*"
 }
 ```
 
@@ -91,14 +91,14 @@ The TypeScript path alias in `tsconfig.json` points directly at the package sour
 
 ```json
 "paths": {
-  "react-page-builder": ["./packages/page-builder-core/src/index.ts"]
+  "react-page-and-form-builder": ["./packages/page-builder-core/src/index.ts"]
 }
 ```
 
 For Next.js to transpile the workspace package, `next.config.ts` includes:
 
 ```ts
-transpilePackages: ["react-page-builder"]
+transpilePackages: ["react-page-and-form-builder"]
 ```
 
 ---
@@ -111,5 +111,5 @@ transpilePackages: ["react-page-builder"]
 | `pnpm build` | Production build of the Next.js app |
 | `pnpm type-check` | TypeScript check across the whole workspace |
 | `pnpm lint` | ESLint via Next.js |
-| `pnpm pkg:build` | Build the `react-page-builder` package |
+| `pnpm pkg:build` | Build the `react-page-and-form-builder` package |
 | `pnpm pkg:dev` | Build the package in watch mode |

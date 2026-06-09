@@ -1,4 +1,4 @@
-# react-page-builder
+# react-page-and-form-builder
 
 A headless, UI-agnostic React page builder with a 12-column grid system, drag-free section/component management, nested sections, undo/redo history, and full render-prop customization. Works in plain React (Vite, CRA) and Next.js App Router.
 
@@ -45,11 +45,11 @@ A headless, UI-agnostic React page builder with a 12-column grid system, drag-fr
 ## Installation
 
 ```bash
-npm install react-page-builder
+npm install react-page-and-form-builder
 # or
-pnpm add react-page-builder
+pnpm add react-page-and-form-builder
 # or
-yarn add react-page-builder
+yarn add react-page-and-form-builder
 ```
 
 **Peer dependencies** (must be installed separately):
@@ -66,8 +66,8 @@ React >= 17 is required. No other runtime dependencies.
 
 ```tsx
 import { useState } from "react";
-import { PageBuilder } from "react-page-builder";
-import type { ComponentDefinition } from "react-page-builder";
+import { PageBuilder } from "react-page-and-form-builder";
+import type { ComponentDefinition } from "react-page-and-form-builder";
 
 // 1. Define your component registry
 const components: ComponentDefinition[] = [
@@ -255,8 +255,8 @@ Attach a `ref` to access programmatic control:
 
 ```tsx
 import { useRef } from "react";
-import { PageBuilder } from "react-page-builder";
-import type { PageBuilderHandle } from "react-page-builder";
+import { PageBuilder } from "react-page-and-form-builder";
+import type { PageBuilderHandle } from "react-page-and-form-builder";
 
 const ref = useRef<PageBuilderHandle>(null);
 
@@ -648,8 +648,8 @@ The pattern below uses [dnd-kit](https://dndkit.com) to support two drag types:
 
 ```tsx
 import { DndContext, useDraggable, useDroppable, DragOverlay } from "@dnd-kit/core";
-import { PageBuilder } from "react-page-builder";
-import type { SubSectionWrapperRenderProps, SectionWrapperRenderProps } from "react-page-builder";
+import { PageBuilder } from "react-page-and-form-builder";
+import type { SubSectionWrapperRenderProps, SectionWrapperRenderProps } from "react-page-and-form-builder";
 
 function DroppableColumn({ nodeId, children, isWidgetDragging }: SubSectionWrapperRenderProps & { isWidgetDragging: boolean }) {
   const { setNodeRef, isOver } = useDroppable({ id: `col-${nodeId}`, data: { kind: "column", nodeId } });
@@ -723,8 +723,8 @@ export function PageBuilderWithDnD() {
 `GridLayout` can be used independently of `PageBuilder` — useful when you have an existing `ILayoutData[]` array and just want to render it as a responsive grid without the editing UI.
 
 ```tsx
-import { GridLayout } from "react-page-builder";
-import type { ILayoutData } from "react-page-builder";
+import { GridLayout } from "react-page-and-form-builder";
+import type { ILayoutData } from "react-page-and-form-builder";
 
 const items: ILayoutData[] = [
   {
@@ -799,7 +799,7 @@ The built-in layout picker modal can be used outside of `PageBuilder` — for ex
 
 ```tsx
 import { useState } from "react";
-import { LayoutPicker, LAYOUT_PRESETS } from "react-page-builder";
+import { LayoutPicker, LAYOUT_PRESETS } from "react-page-and-form-builder";
 
 function MyToolbar() {
   const [open, setOpen] = useState(false);
@@ -910,7 +910,7 @@ import type {
 
   // Constants
   LayoutPresetKey,
-} from "react-page-builder";
+} from "react-page-and-form-builder";
 ```
 
 ---
@@ -943,7 +943,7 @@ If you are using the package from a local workspace (not published to npm), add 
 **`next.config.ts`**
 ```ts
 const nextConfig = {
-  transpilePackages: ["react-page-builder"],
+  transpilePackages: ["react-page-and-form-builder"],
 };
 ```
 
@@ -952,7 +952,7 @@ const nextConfig = {
 {
   "compilerOptions": {
     "paths": {
-      "react-page-builder": ["./packages/page-builder-core/src/index.ts"]
+      "react-page-and-form-builder": ["./packages/page-builder-core/src/index.ts"]
     }
   }
 }
@@ -984,8 +984,8 @@ The `renderComponent` field on `ILayoutData` is stripped by `onChange` and `onSa
 "use client"; // Next.js App Router only
 
 import { useRef, useState, useEffect } from "react";
-import { PageBuilder } from "react-page-builder";
-import type { ComponentDefinition, PageBuilderHandle, SerializableLayoutItem } from "react-page-builder";
+import { PageBuilder } from "react-page-and-form-builder";
+import type { ComponentDefinition, PageBuilderHandle, SerializableLayoutItem } from "react-page-and-form-builder";
 
 const components: ComponentDefinition[] = [
   { name: "Hero",    label: "Hero",    icon: "🖼️", component: () => <div>Hero</div> },
@@ -1063,7 +1063,7 @@ export function App() {
 
 ```tsx
 import { useState } from "react";
-import { PageBuilder, LAYOUT_PRESETS } from "react-page-builder";
+import { PageBuilder, LAYOUT_PRESETS } from "react-page-and-form-builder";
 import type {
   ComponentDefinition,
   AddTriggerRenderProps,
@@ -1071,7 +1071,7 @@ import type {
   SectionControlsRenderProps,
   ComponentPickerRenderProps,
   ComponentControlsRenderProps,
-} from "react-page-builder";
+} from "react-page-and-form-builder";
 
 const components: ComponentDefinition[] = [/* ... */];
 
@@ -1209,8 +1209,8 @@ export function App() {
 ### Example 3 — GridLayout standalone (read-only render from server data)
 
 ```tsx
-import { GridLayout } from "react-page-builder";
-import type { ILayoutData } from "react-page-builder";
+import { GridLayout } from "react-page-and-form-builder";
+import type { ILayoutData } from "react-page-and-form-builder";
 
 // Components keyed by ComponentName
 const registry: Record<string, React.ComponentType<any>> = {
@@ -1246,8 +1246,8 @@ function PageRenderer({ layout }: { layout: ILayoutData[] }) {
 
 ```tsx
 import { useRef, useState } from "react";
-import { PageBuilder } from "react-page-builder";
-import type { PageBuilderHandle } from "react-page-builder";
+import { PageBuilder } from "react-page-and-form-builder";
+import type { PageBuilderHandle } from "react-page-and-form-builder";
 
 const STORAGE_KEY = "my-page-layout";
 

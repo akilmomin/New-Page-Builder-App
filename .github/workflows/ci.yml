@@ -67,7 +67,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build react-page-builder
+      - name: Build react-page-and-form-builder
         run: pnpm pkg:build
 
       - name: Verify dist output

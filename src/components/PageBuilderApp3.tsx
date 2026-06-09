@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { PageBuilder } from "react-page-builder";
-import type { ComponentDefinition, ILayoutData, SerializableLayoutItem } from "react-page-builder";
+import { PageBuilder } from "react-page-and-form-builder";
+import type { ComponentDefinition, ILayoutData, SerializableLayoutItem } from "react-page-and-form-builder";
 import { FormProvider, useFormValues } from "@/components/form/FormContext";
 import { TextField } from "@/components/form/TextField";
 import { DateField } from "@/components/form/DateField";

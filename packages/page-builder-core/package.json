@@ -1,8 +1,8 @@
 {
-  "name": "react-page-builder",
+  "name": "react-page-and-form-builder",
   "version": "0.1.0",
   "description": "UI-agnostic React page-builder component with 12-column grid, section/component picker, and full render-prop overrides.",
-  "author": "",
+  "author": "Akil Momin",
   "license": "MIT",
   "keywords": [
     "react",
