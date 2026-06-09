@@ -1,6 +1,6 @@
 # react-page-builder
 
-A headless, UI-agnostic React page builder with a 12-column grid system, drag-free section/component management, and full render-prop customisation. Works in plain React (Vite, CRA) and Next.js App Router.
+A headless, UI-agnostic React page builder with a 12-column grid system, drag-free section/component management, nested sections, undo/redo history, and full render-prop customization. Works in plain React (Vite, CRA) and Next.js App Router.
 
 ---
 
@@ -18,15 +18,21 @@ A headless, UI-agnostic React page builder with a 12-column grid system, drag-fr
   - [Imperative handle (ref API)](#imperative-handle-ref-api)
   - [Edit mode](#edit-mode)
   - [Saving layout](#saving-layout)
+  - [Undo / Redo](#undo--redo)
+  - [Component selection](#component-selection)
+  - [Nested sections](#nested-sections)
 - [Render Props](#render-props)
   - [renderAddTrigger](#renderaddtrigger)
   - [renderLayoutPicker](#renderlayoutpicker)
   - [renderSectionControls](#rendersectioncontrols)
   - [renderComponentPicker](#rendercomponentpicker)
   - [renderComponentControls](#rendercomponentcontrols)
+  - [renderSectionWrapper](#rendersectionwrapper)
+  - [renderSubSectionWrapper](#rendersubsectionwrapper)
+- [Drag-and-Drop Integration](#drag-and-drop-integration)
 - [GridLayout (standalone)](#gridlayout-standalone)
 - [LayoutPicker (standalone)](#layoutpicker-standalone)
-- [Responsive Behaviour](#responsive-behaviour)
+- [Responsive Behavior](#responsive-behavior)
 - [CSS Custom Properties](#css-custom-properties)
 - [TypeScript Types](#typescript-types)
 - [Layout Presets](#layout-presets)
@@ -191,21 +197,28 @@ Every registered component receives an `editMode?: boolean` prop automatically �
 | `components` | `ComponentDefinition[]` | required | Component registry |
 | `defaultValue` | `ILayoutData[]` | `[]` | Initial layout (uncontrolled mode) |
 | `value` | `ILayoutData[]` | — | Controlled layout value |
-| `onChange` | `(items: SerializableLayoutItem[]) => void` | — | Called on every layout change |
+| `onChange` | `(items: SerializableLayoutItem[]) => void` | — | Called on every layout change (both controlled and uncontrolled) |
 | `editMode` | `boolean` | — | Controlled edit-mode flag |
 | `onEditModeChange` | `(isEdit: boolean) => void` | — | Called when edit mode changes |
 | `spacing` | `number` | `8` | Gap (px) between sections and stacked components |
 | `mobileBreakpoint` | `number` | `768` | Viewport width (px) below which columns stack to single column. Set `0` to disable. |
-| `tabletBreakpoint` | `number` | `0` | Viewport width (px) above `mobileBreakpoint` where columns are limited to 2 per row. Set `0` to disable. |
+| `tabletBreakpoint` | `number` | `0` | Viewport width (px) above `mobileBreakpoint` where columns are limited. Set `0` to disable. |
+| `tabletMaxColumnsPerRow` | `number` | `2` | Max columns per row at tablet width. Only applies when `tabletBreakpoint > 0`. |
+| `maxColumnsPerRow` | `number` | `4` | Max columns per row at desktop width. Increase to 6+ for dense grids. |
 | `onSaveChange` | `(items: SerializableLayoutItem[]) => void` | — | Called when Save is triggered. Omit to hide the Save button. |
+| `maxHistorySize` | `number` | `50` | Maximum undo steps to retain. Older entries are dropped first. |
+| `onHistoryChange` | `(state: { canUndo: boolean; canRedo: boolean }) => void` | — | Called whenever undo/redo availability changes. Use to enable/disable toolbar buttons. |
+| `onComponentSelect` | `(nodeId, componentName, props) => void` | — | Called when the active component changes. Receive `null` values when selection is cleared. |
 | `renderAddTrigger` | `(props) => ReactNode` | — | Replace the "+ Add Section" button |
 | `renderLayoutPicker` | `(props) => ReactNode` | — | Replace the layout picker modal |
 | `renderSectionControls` | `(props) => ReactNode` | — | Replace the section toolbar (⊞ ⧉ ✕) |
-| `renderComponentPicker` | `(props) => ReactNode` | — | Replace the component picker panel |
+| `renderComponentPicker` | `(props) => ReactNode` | — | Replace the component/section picker panel |
 | `renderComponentControls` | `(props) => ReactNode` | — | Replace the component toolbar (⧉ ✕) |
+| `renderSectionWrapper` | `(props) => ReactNode` | — | Wrap each section — use for DnD sortable handles |
+| `renderSubSectionWrapper` | `(props) => ReactNode` | — | Wrap each column — use for DnD droppable targets |
 | `classNames` | `PageBuilderClassNames` | — | CSS class names for structural elements |
 | `style` | `React.CSSProperties` | — | Inline style for the root element |
-| `ref` | `React.Ref<PageBuilderHandle>` | — | Imperative handle for reset/save |
+| `ref` | `React.Ref<PageBuilderHandle>` | — | Imperative handle for programmatic control |
 
 ### Controlled vs uncontrolled mode
 
@@ -238,7 +251,7 @@ const [layout, setLayout] = useState<ILayoutData[]>(initialLayout);
 
 ### Imperative handle (ref API)
 
-Attach a `ref` to get access to two imperative methods:
+Attach a `ref` to access programmatic control:
 
 ```tsx
 import { useRef } from "react";
@@ -248,16 +261,19 @@ import type { PageBuilderHandle } from "react-page-builder";
 const ref = useRef<PageBuilderHandle>(null);
 
 <PageBuilder ref={ref} components={components} onSaveChange={handleSave} />
-
-// In your toolbar:
-<button onClick={() => ref.current?.reset()}>Reset</button>
-<button onClick={() => ref.current?.save()}>Save</button>
 ```
 
 | Method | Description |
 |--------|-------------|
-| `reset()` | Clears all sections and components from the canvas |
+| `reset()` | Clears all sections and components from the canvas, also clears history |
 | `save()` | Triggers `onSaveChange` with the current serialized layout |
+| `undo()` | Steps back one action in the history stack. No-op when nothing to undo |
+| `redo()` | Steps forward one action in the history stack. No-op when nothing to redo |
+| `addSection(targetId, columns)` | Appends a new section inside `targetId`. Pass `"__root__"` for the canvas level |
+| `addSectionAfter(parentId, afterIndex, columns)` | Inserts a section after position `afterIndex` inside `parentId`. Use `afterIndex: -1` to prepend |
+| `addComponent(targetId, componentName, componentProps?)` | Adds a component into the column identified by `targetId` |
+| `updateComponentProps(nodeId, patch)` | Merges `patch` into the component's props. Use from an external settings panel |
+| `setLayout(items)` | Replaces the entire layout from a `SerializableLayoutItem[]` array and pushes a history entry |
 
 ### Edit mode
 
@@ -266,7 +282,8 @@ When `editMode` is `false` (the default), the builder renders as a static read-o
 When `editMode` is `true`:
 - Sections get a blue outline on hover
 - The ⊞ (change layout), ⧉ (clone), and ✕ (delete) controls appear
-- Empty column slots show an "+ Add Component" area
+- Columns show a `+ Add` button that opens a unified picker for sections and components
+- Keyboard shortcuts `Ctrl+Z` / `Ctrl+Y` (or `Cmd+Z` / `Cmd+Shift+Z` on Mac) are active
 - A "+ Add Section" trigger appears at the bottom of the canvas
 
 Edit mode can be toggled from outside via the `editMode` prop, or the builder can manage it internally when `onEditModeChange` is provided.
@@ -281,11 +298,122 @@ type SerializableLayoutItem = Omit<ILayoutData, "renderComponent">;
 
 Store this array in your database. Pass it back as `defaultValue` (or `value`) on the next load.
 
+`onChange` fires on every mutation (both controlled and uncontrolled mode). Use it to track dirty state:
+
+```tsx
+const [isDirty, setIsDirty] = useState(false);
+
+<PageBuilder
+  onChange={() => setIsDirty(true)}
+  onSaveChange={() => setIsDirty(false)}
+  ...
+/>
+```
+
+### Undo / Redo
+
+The builder maintains an internal history stack. Every layout mutation (add, delete, clone, change layout, update props) pushes a snapshot onto the stack.
+
+**Keyboard shortcuts** (active whenever `editMode` is `true`):
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl+Z` / `Cmd+Z` | Undo |
+| `Ctrl+Y` / `Ctrl+Shift+Z` / `Cmd+Shift+Z` | Redo |
+
+**External toolbar buttons** — use `onHistoryChange` to enable/disable them:
+
+```tsx
+const ref = useRef<PageBuilderHandle>(null);
+const [canUndo, setCanUndo] = useState(false);
+const [canRedo, setCanRedo] = useState(false);
+
+<div>
+  <button onClick={() => ref.current?.undo()} disabled={!canUndo}>↩ Undo</button>
+  <button onClick={() => ref.current?.redo()} disabled={!canRedo}>↪ Redo</button>
+</div>
+
+<PageBuilder
+  ref={ref}
+  onHistoryChange={({ canUndo, canRedo }) => {
+    setCanUndo(canUndo);
+    setCanRedo(canRedo);
+  }}
+  ...
+/>
+```
+
+**Limit history size** with `maxHistorySize` (default 50):
+
+```tsx
+<PageBuilder maxHistorySize={20} ... />
+```
+
+`reset()` clears the history stack entirely — it is a deliberate full wipe and cannot be undone.
+
+### Component selection
+
+Use `onComponentSelect` to drive an external settings panel. The callback fires whenever the user clicks a component in edit mode:
+
+```tsx
+const [selected, setSelected] = useState<{
+  nodeId: string;
+  componentName: string;
+  props: Record<string, unknown>;
+} | null>(null);
+
+<PageBuilder
+  ref={ref}
+  onComponentSelect={(nodeId, componentName, props) =>
+    setSelected(nodeId ? { nodeId, componentName: componentName!, props } : null)
+  }
+  ...
+/>
+
+// In your settings panel:
+{selected && (
+  <input
+    defaultValue={selected.props.title as string}
+    onBlur={(e) =>
+      ref.current?.updateComponentProps(selected.nodeId, { title: e.target.value })
+    }
+  />
+)}
+```
+
+### Nested sections
+
+Columns at the root level (depth 0) can hold child sections in addition to components. This lets you create compound layouts — for example, a 6/6 row where the right column contains its own 4/4/4 sub-grid.
+
+Nesting is limited to **one level deep**. Columns inside a nested section can only hold components, not further sections.
+
+In the built-in UI, clicking `+ Add` in any root-level column opens a panel showing both layout presets (to insert a nested section) and component tiles.
+
+When using `renderComponentPicker`, the optional `onAddSection` callback is passed when the column can hold nested sections:
+
+```tsx
+<PageBuilder
+  renderComponentPicker={({ components, onSelectComponent, onClose, onAddSection }) => (
+    <div>
+      {onAddSection && (
+        // render layout preset tiles — onAddSection is undefined at depth 1
+        <LayoutPresetGrid onSelect={(cols) => { onAddSection(cols); onClose(); }} />
+      )}
+      {components.map((def) => (
+        <button key={def.name} onClick={() => { onSelectComponent(def.name); onClose(); }}>
+          {def.label}
+        </button>
+      ))}
+    </div>
+  )}
+/>
+```
+
 ---
 
 ## Render Props
 
-All five builder UI slots have render-prop overrides. When a render prop is `undefined`, the built-in default UI is used — so you only need to provide the slots you want to customise.
+All builder UI slots have render-prop overrides. When a render prop is `undefined`, the built-in default UI is used — so you only need to provide the slots you want to customize.
 
 ### renderAddTrigger
 
@@ -376,22 +504,32 @@ interface SectionControlsRenderProps {
 
 ### renderComponentPicker
 
-Replaces the component picker panel that appears when clicking an empty column slot.
+Replaces the component picker panel that appears when clicking the `+ Add` button in a column.
 
 ```tsx
 interface ComponentPickerRenderProps {
   components: ComponentDefinition[];
   onSelectComponent: (name: string) => void;
   onClose: () => void;
+  /**
+   * Present only when the column can hold a nested section (depth 0).
+   * Call with column spans to insert a nested section.
+   * Undefined at depth 1 — omit the section UI in that case.
+   */
+  onAddSection?: (cols: readonly number[]) => void;
 }
 ```
 
 ```tsx
 <PageBuilder
-  renderComponentPicker={({ components, onSelectComponent, onClose }) => (
+  renderComponentPicker={({ components, onSelectComponent, onClose, onAddSection }) => (
     <div className="my-picker">
       <div className="backdrop" onClick={onClose} />
       <div className="panel">
+        {onAddSection && (
+          // Show layout options only for depth-0 columns
+          <LayoutPresetGrid onSelect={(cols) => { onAddSection(cols); onClose(); }} />
+        )}
         {components.map((def) => (
           <button
             key={def.name}
@@ -427,6 +565,155 @@ interface ComponentControlsRenderProps {
     </div>
   )}
 />
+```
+
+### renderSectionWrapper
+
+Wraps each top-level section on the canvas. Use this to attach drag handles for section reordering with a library like dnd-kit. The wrapper receives the section's `nodeId` and its zero-based `index`.
+
+```tsx
+interface SectionWrapperRenderProps {
+  nodeId: string;   // section's unique ID — use as the sortable item ID
+  index: number;    // zero-based position on the canvas
+  children: React.ReactNode;
+}
+```
+
+```tsx
+import { useSortable } from "@dnd-kit/sortable";
+
+function SortableSection({ nodeId, index, children }: SectionWrapperRenderProps) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: nodeId });
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      {...attributes}
+      {...listeners}
+    >
+      {children}
+    </div>
+  );
+}
+
+<PageBuilder
+  renderSectionWrapper={(props) => <SortableSection {...props} />}
+/>
+```
+
+### renderSubSectionWrapper
+
+Wraps each column inside a section. Use this to make columns droppable targets for widget drag-and-drop. The wrapper receives the column's `nodeId`.
+
+```tsx
+interface SubSectionWrapperRenderProps {
+  nodeId: string;   // column's unique ID — use as the droppable target ID
+  children: React.ReactNode;
+}
+```
+
+```tsx
+import { useDroppable } from "@dnd-kit/core";
+
+function DroppableColumn({ nodeId, children }: SubSectionWrapperRenderProps) {
+  const { setNodeRef, isOver } = useDroppable({ id: `col-${nodeId}`, data: { nodeId } });
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        outline: isOver ? "2px dashed #0078d4" : "2px solid transparent",
+        borderRadius: 6,
+        minHeight: 48,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+<PageBuilder
+  renderSubSectionWrapper={(props) => <DroppableColumn {...props} />}
+/>
+```
+
+---
+
+## Drag-and-Drop Integration
+
+The package does not include any DnD code — it exposes `renderSectionWrapper` and `renderSubSectionWrapper` as integration points so you can wire up any DnD library without taking on a dependency.
+
+The pattern below uses [dnd-kit](https://dndkit.com) to support two drag types:
+- **Layout drag**: drag a layout preset chip from a sidebar and drop it between sections to insert a new section
+- **Widget drag**: drag a component chip and drop it onto a column to add it
+
+```tsx
+import { DndContext, useDraggable, useDroppable, DragOverlay } from "@dnd-kit/core";
+import { PageBuilder } from "react-page-builder";
+import type { SubSectionWrapperRenderProps, SectionWrapperRenderProps } from "react-page-builder";
+
+function DroppableColumn({ nodeId, children, isWidgetDragging }: SubSectionWrapperRenderProps & { isWidgetDragging: boolean }) {
+  const { setNodeRef, isOver } = useDroppable({ id: `col-${nodeId}`, data: { kind: "column", nodeId } });
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        outline: isWidgetDragging ? (isOver ? "2px dashed #0078d4" : "2px dashed rgba(0,120,212,0.25)") : "none",
+        borderRadius: 6,
+        minHeight: isWidgetDragging ? 48 : undefined,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function SectionDropZone({ afterIndex, visible }: { afterIndex: number; visible: boolean }) {
+  const { setNodeRef, isOver } = useDroppable({ id: `zone-${afterIndex}`, data: { kind: "zone", afterIndex } });
+  if (!visible) return null;
+  return (
+    <div ref={setNodeRef} style={{ height: isOver ? 52 : 20, border: isOver ? "2px dashed #0078d4" : "2px dashed transparent", borderRadius: 8 }} />
+  );
+}
+
+export function PageBuilderWithDnD() {
+  const ref = useRef<PageBuilderHandle>(null);
+  const [activeDrag, setActiveDrag] = useState<{ kind: "layout" | "widget"; [k: string]: unknown } | null>(null);
+
+  return (
+    <DndContext
+      onDragStart={(e) => setActiveDrag(e.active.data.current as never)}
+      onDragEnd={({ active, over }) => {
+        setActiveDrag(null);
+        if (!over) return;
+        const drag = active.data.current as { kind: string; columns?: readonly number[]; componentName?: string };
+        const drop = over.data.current as { kind: string; afterIndex?: number; nodeId?: string };
+
+        if (drag.kind === "layout" && drop.kind === "zone")
+          ref.current?.addSectionAfter("__root__", drop.afterIndex!, drag.columns!);
+        else if (drag.kind === "widget" && drop.kind === "column")
+          ref.current?.addComponent(drop.nodeId!, drag.componentName!);
+      }}
+    >
+      {/* drop zone before the first section */}
+      <SectionDropZone afterIndex={-1} visible={activeDrag?.kind === "layout"} />
+
+      <PageBuilder
+        ref={ref}
+        components={components}
+        editMode={editMode}
+        renderSectionWrapper={(props) => (
+          <>
+            {props.children}
+            <SectionDropZone afterIndex={props.index} visible={activeDrag?.kind === "layout"} />
+          </>
+        )}
+        renderSubSectionWrapper={(props) => (
+          <DroppableColumn {...props} isWidgetDragging={activeDrag?.kind === "widget"} />
+        )}
+      />
+    </DndContext>
+  );
+}
 ```
 
 ---
@@ -486,7 +773,9 @@ function MyPage() {
 | `rowGapPx` | `number` | same as `gapPx` | Vertical gap between rows (px) |
 | `componentGapPx` | `number` | `0` | Vertical gap between stacked items within a column (px) |
 | `mobileBreakpoint` | `number` | `768` | Below this width all columns stack to 100%. Set `0` to disable. |
-| `tabletBreakpoint` | `number` | `0` | Between mobile and this width columns are limited to 2 per row. Set `0` to disable. |
+| `tabletBreakpoint` | `number` | `0` | Between mobile and this width columns are limited. Set `0` to disable. |
+| `tabletMaxColumnsPerRow` | `number` | `2` | Max columns per row in the tablet range. |
+| `maxColumnsPerRow` | `number` | `4` | Max columns per row at desktop width. |
 | `className` | `string` | — | Class applied to the root `<div>` |
 | `style` | `React.CSSProperties` | — | Inline style for the root `<div>` |
 
@@ -538,14 +827,14 @@ The picker has a built-in "Custom" option where users can type any column spans 
 
 ---
 
-## Responsive Behaviour
+## Responsive Behavior
 
 The builder supports three breakpoint tiers, all controlled by props on `PageBuilder` (and directly on `GridLayout`):
 
 | Viewport | Behaviour |
 |----------|-----------|
 | `>= tabletBreakpoint` | Full layout — all columns at their defined spans |
-| `>= mobileBreakpoint` and `< tabletBreakpoint` | Tablet — columns capped at 2 per row, each 50% wide |
+| `>= mobileBreakpoint` and `< tabletBreakpoint` | Tablet — columns capped at `tabletMaxColumnsPerRow` per row |
 | `< mobileBreakpoint` | Mobile — all columns stack to 100% width |
 
 **Example — three-tier responsive:**
@@ -554,8 +843,9 @@ The builder supports three breakpoint tiers, all controlled by props on `PageBui
 <PageBuilder
   components={components}
   defaultValue={layout}
-  mobileBreakpoint={640}   // < 640px: single column
-  tabletBreakpoint={1024}  // 640–1023px: max 2 columns per row
+  mobileBreakpoint={640}      // < 640px: single column
+  tabletBreakpoint={1024}     // 640–1023px: max 3 columns per row
+  tabletMaxColumnsPerRow={3}  // default is 2
 />
 ```
 
@@ -571,7 +861,7 @@ Breakpoints use `window.matchMedia` inside a `useEffect`, so they are SSR-safe �
 
 ## CSS Custom Properties
 
-The builder uses CSS custom properties for colours, radii, and shadows. Override them on any ancestor element to theme the built-in controls:
+The builder uses CSS custom properties for colors, radii, and shadows. Override them on any ancestor element to theme the built-in controls:
 
 ```css
 :root {
@@ -608,6 +898,8 @@ import type {
   ComponentPickerRenderProps,
   SectionControlsRenderProps,
   ComponentControlsRenderProps,
+  SectionWrapperRenderProps,
+  SubSectionWrapperRenderProps,
 
   // Component prop types
   PageBuilderProps,
@@ -670,23 +962,14 @@ const nextConfig = {
 
 ## Limitations
 
-### No drag-and-drop
-Sections and components cannot be reordered by dragging. Reordering requires cloning and deleting, or managing the `value` array directly. Drag-and-drop is not currently implemented.
-
-### No undo/redo
-There is no built-in history stack. If you need undo support, manage layout state via the `value` prop and maintain your own history array externally.
+### No built-in section reordering by drag
+Sections cannot be reordered by dragging within the builder's canvas. Use `renderSectionWrapper` with a library like dnd-kit to build a sortable list, then call `ref.current.setLayout(reorderedItems)` from your drag-end handler.
 
 ### No inline prop editing
-The builder does not render a property panel for editing component props. `componentProps` is a static bag passed at layout definition time. To support prop editing, manage component props externally and inject them into `componentProps` in your `value` array.
-
-### Tablet layout is always 2-column
-When `tabletBreakpoint` is set, all sections reflow to at most 2 columns per row regardless of their desktop layout. A 3-column section at tablet size becomes a 2-column first row with the third column wrapping to a new row. There is no per-section tablet override.
+The builder does not render a property panel for editing component props. Use `onComponentSelect` to know which component is selected, then call `ref.current.updateComponentProps(nodeId, patch)` from your own external settings panel.
 
 ### No SSR breakpoint matching
-Responsive breakpoints are applied client-side via `window.matchMedia`. On the server (SSR/SSG), the desktop layout is always rendered. The correct responsive layout is applied after hydration. This can cause a brief layout flash on mobile on first page load.
-
-### Maximum 4 columns per row (desktop)
-The desktop grid supports at most 4 columns per row. Sections with more than 4 columns will overflow into additional rows.
+Responsive breakpoints are applied client-side via `window.matchMedia`. On the server (SSR/SSG), the desktop layout is always rendered. The correct responsive layout is applied after hydration. This can cause a brief layout shift on mobile on first page load.
 
 ### renderComponent is never serialized
 The `renderComponent` field on `ILayoutData` is stripped by `onChange` and `onSaveChange`. Use `componentProps` to carry data that needs to be persisted.
@@ -695,12 +978,12 @@ The `renderComponent` field on `ILayoutData` is stripped by `onChange` and `onSa
 
 ## Full Examples
 
-### Example 1 — Default UI with save/reset toolbar
+### Example 1 — Default UI with undo/redo toolbar and dirty-state tracking
 
 ```tsx
 "use client"; // Next.js App Router only
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { PageBuilder } from "react-page-builder";
 import type { ComponentDefinition, PageBuilderHandle, SerializableLayoutItem } from "react-page-builder";
 
@@ -719,20 +1002,33 @@ const initialLayout = [
 export function App() {
   const ref = useRef<PageBuilderHandle>(null);
   const [editMode, setEditMode] = useState(false);
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
 
-  const handleSave = (layout: SerializableLayoutItem[]) => {
-    localStorage.setItem("layout", JSON.stringify(layout));
-  };
+  useEffect(() => {
+    const onBeforeUnload = (e: BeforeUnloadEvent) => { if (isDirty) e.preventDefault(); };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [isDirty]);
 
   return (
     <div>
       <div style={{ display: "flex", gap: 8, padding: 8, borderBottom: "1px solid #eee" }}>
-        <button onClick={() => ref.current?.reset()}>Reset</button>
-        <button onClick={() => setEditMode((m) => !m)}>
-          {editMode ? "Done" : "Edit"}
-        </button>
-        <button onClick={() => ref.current?.save()} style={{ marginLeft: "auto" }}>
-          Save
+        <button onClick={() => { ref.current?.reset(); setIsDirty(false); }}>Reset</button>
+        <button onClick={() => setEditMode((m) => !m)}>{editMode ? "Done" : "Edit"}</button>
+        {editMode && (
+          <>
+            <button onClick={() => ref.current?.undo()} disabled={!canUndo}>↩ Undo</button>
+            <button onClick={() => ref.current?.redo()} disabled={!canRedo}>↪ Redo</button>
+          </>
+        )}
+        {isDirty && <span style={{ marginLeft: "auto", color: "#d97706" }}>Unsaved changes</span>}
+        <button
+          onClick={() => ref.current?.save()}
+          style={{ marginLeft: isDirty ? 0 : "auto", background: isDirty ? "#16a34a" : undefined, color: isDirty ? "#fff" : undefined }}
+        >
+          Save{isDirty ? " *" : ""}
         </button>
       </div>
 
@@ -742,10 +1038,19 @@ export function App() {
         defaultValue={initialLayout}
         editMode={editMode}
         onEditModeChange={setEditMode}
-        onSaveChange={handleSave}
+        onChange={() => setIsDirty(true)}
+        onSaveChange={(layout) => {
+          setIsDirty(false);
+          localStorage.setItem("layout", JSON.stringify(layout));
+        }}
+        onHistoryChange={({ canUndo, canRedo }) => {
+          setCanUndo(canUndo);
+          setCanRedo(canRedo);
+        }}
         spacing={16}
         mobileBreakpoint={640}
         tabletBreakpoint={1024}
+        tabletMaxColumnsPerRow={3}
       />
     </div>
   );
@@ -758,7 +1063,7 @@ export function App() {
 
 ```tsx
 import { useState } from "react";
-import { PageBuilder } from "react-page-builder";
+import { PageBuilder, LAYOUT_PRESETS } from "react-page-builder";
 import type {
   ComponentDefinition,
   AddTriggerRenderProps,
@@ -835,11 +1140,28 @@ function SectionControls({ onClone, onDelete, onChangeLayout, isLayoutPickerOpen
   );
 }
 
-function MyComponentPicker({ components, onSelectComponent, onClose }: ComponentPickerRenderProps) {
+function MyComponentPicker({ components, onSelectComponent, onClose, onAddSection }: ComponentPickerRenderProps) {
   return (
     <div style={{ position: "fixed", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
       <div style={{ position: "fixed", inset: 0 }} onClick={onClose} />
-      <div style={{ position: "relative", background: "#fff", borderRadius: 12, padding: 20, minWidth: 260, boxShadow: "0 8px 32px rgba(0,0,0,0.2)" }}>
+      <div style={{ position: "relative", background: "#fff", borderRadius: 12, padding: 20, minWidth: 280, boxShadow: "0 8px 32px rgba(0,0,0,0.2)" }}>
+        {onAddSection && (
+          <>
+            <p style={{ fontWeight: 600, marginBottom: 8 }}>Add Section</p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 16 }}>
+              {Object.entries(LAYOUT_PRESETS).map(([key, cols]) => (
+                <button
+                  key={key}
+                  onClick={() => { onAddSection(cols); onClose(); }}
+                  style={{ padding: 8, border: "1px solid #e5e7eb", borderRadius: 6, cursor: "pointer" }}
+                >
+                  {key}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+        <p style={{ fontWeight: 600, marginBottom: 8 }}>Add Component</p>
         {components.map((def) => (
           <button
             key={def.name}

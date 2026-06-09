@@ -10,15 +10,14 @@ const DEFAULT_MAX_COLS_PER_ROW = 4;
 const spanToPercent = (span: number): string => `${((span / 12) * 100).toFixed(4)}%`;
 
 const useMediaQuery = (query: string, enabled: boolean): boolean => {
-  const [matches, setMatches] = useState(() => {
-    if (!enabled || typeof window === "undefined") return false;
-    return window.matchMedia(query).matches;
-  });
+  // Always initialise to false so server and client agree on the first render.
+  // useEffect (client-only) then syncs the real match state after hydration.
+  const [matches, setMatches] = useState(false);
   useEffect(() => {
     if (!enabled) return;
     const mql = window.matchMedia(query);
-    const handler = (e: MediaQueryListEvent) => setMatches(e.matches);
     setMatches(mql.matches);
+    const handler = (e: MediaQueryListEvent) => setMatches(e.matches);
     mql.addEventListener("change", handler);
     return () => mql.removeEventListener("change", handler);
   }, [query, enabled]);

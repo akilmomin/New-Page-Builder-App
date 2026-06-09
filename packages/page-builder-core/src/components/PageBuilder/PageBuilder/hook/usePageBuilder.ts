@@ -205,6 +205,7 @@ export const usePageBuilder = ({
         onChangeRef.current?.(serializeLayout(nodesToLayoutData(nextNodes)));
       } else {
         dispatch({ type: "SET_NODES", nodes: nextNodes });
+        onChangeRef.current?.(serializeLayout(nodesToLayoutData(nextNodes)));
       }
     },
     [isControlled],
@@ -221,6 +222,9 @@ export const usePageBuilder = ({
         onChangeRef.current?.(serializeLayout(nodesToLayoutData(nextNodes)));
       } else {
         dispatch(action);
+        // Notify onChange in uncontrolled mode too so callers can observe mutations
+        // (e.g. dirty-state tracking) without having to own the value.
+        onChangeRef.current?.(serializeLayout(nodesToLayoutData(nextNodes)));
       }
 
       pushHistory(nextNodes);

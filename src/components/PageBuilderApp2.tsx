@@ -12,6 +12,7 @@ import type {
   ComponentControlsRenderProps,
   AddTriggerRenderProps,
 } from "react-page-builder";
+import { LAYOUT_PRESETS } from "react-page-builder";
 import { initialLayout } from "@/data/initialLayout";
 import { Banner, BusinessPaper, Event, News, TilesQuickLink } from "@/components/widgets";
 
@@ -77,11 +78,47 @@ function CustomLayoutPicker({ presets, onSelectLayout, onClose }: LayoutPickerRe
   );
 }
 
-function CustomComponentPicker({ components, onSelectComponent, onClose }: ComponentPickerRenderProps) {
+const SECTION_PRESETS_APP2 = [
+  { key: "single",    label: "Full",       spans: LAYOUT_PRESETS.single },
+  { key: "double",    label: "Half/Half",  spans: LAYOUT_PRESETS.double },
+  { key: "leftWide",  label: "Left Wide",  spans: LAYOUT_PRESETS.leftWide },
+  { key: "rightWide", label: "Right Wide", spans: LAYOUT_PRESETS.rightWide },
+  { key: "triple",    label: "Thirds",     spans: LAYOUT_PRESETS.triple },
+] as const;
+
+function CustomComponentPicker({ components, onSelectComponent, onClose, onAddSection }: ComponentPickerRenderProps) {
   return (
     <div className="absolute z-[9999] left-0 right-0 mx-auto w-fit min-w-[300px]">
       <div className="fixed inset-0" onClick={onClose} />
       <div className="relative z-10 bg-white border border-gray-200 rounded-xl shadow-xl p-4 mt-2">
+
+        {/* Section presets — only shown when onAddSection is provided (depth 0 columns) */}
+        {onAddSection && (
+          <>
+            <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">
+              Add Section
+            </p>
+            <div className="grid grid-cols-5 gap-1.5 mb-4">
+              {SECTION_PRESETS_APP2.map(({ key, label, spans }) => (
+                <button
+                  key={key}
+                  onClick={() => { onAddSection(spans); onClose(); }}
+                  className="flex flex-col items-center gap-1 p-2 border border-gray-200 rounded-lg hover:border-indigo-400 hover:bg-indigo-50 transition-colors cursor-pointer"
+                  title={label}
+                >
+                  <div className="flex gap-0.5 w-full h-4">
+                    {spans.map((span, i) => (
+                      <div key={i} style={{ flex: span }} className="bg-indigo-400 rounded-sm opacity-50" />
+                    ))}
+                  </div>
+                  <span className="text-[9px] text-gray-400 whitespace-nowrap">{label}</span>
+                </button>
+              ))}
+            </div>
+            <div className="border-t border-gray-100 mb-3" />
+          </>
+        )}
+
         <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">
           Add Component
         </p>

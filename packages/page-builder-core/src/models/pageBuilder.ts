@@ -73,6 +73,12 @@ export interface ComponentPickerRenderProps {
   components: ComponentDefinition[];
   onSelectComponent: (name: string) => void;
   onClose: () => void;
+  /**
+   * Present only when the column can hold a nested section (depth 0).
+   * Call with column spans to insert a nested section above the components.
+   * Undefined at depth 1 — omit the section UI in that case.
+   */
+  onAddSection?: (cols: readonly number[]) => void;
 }
 
 export interface SectionControlsRenderProps {

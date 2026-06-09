@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { PageBuilder } from "react-page-builder";
 import type { ComponentDefinition, PageBuilderHandle, SerializableLayoutItem } from "react-page-builder";
 import { initialLayout } from "@/data/initialLayout";
@@ -27,8 +27,23 @@ export function PageBuilderApp() {
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
   const [selected, setSelected] = useState<SelectedComponent | null>(null);
+  const [isDirty, setIsDirty] = useState(false);
+
+  // Warn browser when navigating away with unsaved changes.
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) e.preventDefault();
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty]);
+
+  const handleChange = (_layout: SerializableLayoutItem[]) => {
+    setIsDirty(true);
+  };
 
   const handleSave = (layout: SerializableLayoutItem[]) => {
+    setIsDirty(false);
     console.log("Saved layout:", layout);
   };
 
@@ -46,7 +61,7 @@ export function PageBuilderApp() {
         {/* Toolbar */}
         <div className="flex items-center gap-2 px-3 py-2 bg-white border-b border-gray-200 shrink-0">
           <button
-            onClick={() => builderRef.current?.reset()}
+            onClick={() => { builderRef.current?.reset(); setIsDirty(false); }}
             className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50 cursor-pointer"
           >
             Reset
@@ -84,11 +99,24 @@ export function PageBuilderApp() {
             </>
           )}
 
+          {/* Unsaved-changes indicator */}
+          {isDirty && (
+            <span className="ml-auto text-xs text-amber-600 font-medium flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" />
+              Unsaved changes
+            </span>
+          )}
+
           <button
             onClick={() => builderRef.current?.save()}
-            className="ml-auto px-3 py-1.5 text-sm bg-green-600 text-white border border-green-600 rounded hover:bg-green-700 cursor-pointer"
+            className={`${isDirty ? "ml-2" : "ml-auto"} px-3 py-1.5 text-sm rounded border cursor-pointer transition-colors ${
+              isDirty
+                ? "bg-green-600 text-white border-green-600 hover:bg-green-700"
+                : "bg-white text-gray-400 border-gray-200 cursor-default"
+            }`}
+            title={isDirty ? "Save changes" : "No changes to save"}
           >
-            Save
+            Save{isDirty ? " *" : ""}
           </button>
         </div>
 
@@ -100,6 +128,7 @@ export function PageBuilderApp() {
             defaultValue={initialLayout}
             editMode={editMode}
             onEditModeChange={setEditMode}
+            onChange={handleChange}
             onSaveChange={handleSave}
             onHistoryChange={({ canUndo, canRedo }) => {
               setCanUndo(canUndo);

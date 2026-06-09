@@ -39,7 +39,9 @@
       "Bash(pnpm --filter react-page-builder build)",
       "Bash(Get-ChildItem -Path \"c:\\\\workspace\\\\Projects\\\\New Page Builder App\" -Directory)",
       "Bash(Select-Object Name)",
-      "Bash(pnpm tsc *)"
+      "Bash(pnpm tsc *)",
+      "Bash(Get-ChildItem \"c:\\\\workspace\\\\Projects\\\\New Page Builder App\" -Exclude node_modules)",
+      "Bash(Select-Object Name, PSIsContainer)"
     ],
     "additionalDirectories": [
       "c:\\workspace\\Projects\\New Page Builder App\\src"
