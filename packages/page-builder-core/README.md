@@ -2,6 +2,8 @@
 
 A headless, UI-agnostic React page builder with a 12-column grid system, drag-free section/component management, nested sections, undo/redo history, and full render-prop customization. Works in plain React (Vite, CRA) and Next.js App Router.
 
+**[Live Demo](https://new-page-builder-app.vercel.app/)**
+
 ---
 
 ## Table of Contents
