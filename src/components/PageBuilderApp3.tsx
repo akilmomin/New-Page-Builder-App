@@ -145,6 +145,8 @@ const formInitialLayout: ILayoutData[] = [
       label: "Push notifications",
       description: "Receive alerts on your device",
     },
+    // Only relevant when newsletter is on
+    conditions: [{ when: "newsletter", operator: "neq", value: true, then: "hide" }],
   },
 ];
 
@@ -172,6 +174,11 @@ export function PageBuilderApp3() {
   const [editMode, setEditMode] = useState(false);
   const [savedData, setSavedData] = useState<Record<string, unknown> | null>(null);
   const [layoutData, setLayoutData] = useState<SerializableLayoutItem[] | null>(null);
+  const [fieldValues, setFieldValues] = useState<Record<string, unknown>>({});
+
+  const handleFieldChange = (fieldId: string, value: unknown) => {
+    setFieldValues((prev) => ({ ...prev, [fieldId]: value }));
+  };
 
   const handleSave = (values: Record<string, unknown>) => {
     setSavedData(values);
@@ -225,6 +232,8 @@ export function PageBuilderApp3() {
             editMode={editMode}
             onEditModeChange={setEditMode}
             onChange={setLayoutData}
+            fieldValues={fieldValues}
+            onFieldChange={handleFieldChange}
             spacing={8}
           />
         </div>

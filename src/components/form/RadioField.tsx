@@ -13,6 +13,8 @@ export interface RadioFieldProps {
   label?: string;
   options?: RadioOption[];
   editMode?: boolean;
+  isReadonly?: boolean;
+  onFieldChange?: (fieldId: string, value: unknown) => void;
   onPropsChange?: (patch: Record<string, unknown>) => void;
 }
 
@@ -27,10 +29,13 @@ export const RadioField: React.FC<RadioFieldProps> = ({
   label = "Select Option",
   options = DEFAULT_OPTIONS,
   editMode = false,
+  isReadonly = false,
+  onFieldChange,
   onPropsChange,
 }) => {
   const { value, onChange } = useFormField(fieldId);
   const selected = value as string | undefined;
+  const disabled = editMode || isReadonly;
 
   // Local draft mirrors options prop; synced on external changes (undo/redo)
   const [draftOptions, setDraftOptions] = useState<RadioOption[]>(options);
@@ -69,7 +74,7 @@ export const RadioField: React.FC<RadioFieldProps> = ({
           <label
             key={opt.value}
             className={`flex items-center gap-2 text-sm ${
-              editMode ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+              disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"
             }`}
           >
             <input
@@ -77,8 +82,8 @@ export const RadioField: React.FC<RadioFieldProps> = ({
               name={fieldId}
               value={opt.value}
               checked={selected === opt.value}
-              disabled={editMode}
-              onChange={() => !editMode && onChange(opt.value)}
+              disabled={disabled}
+              onChange={() => { if (!disabled) { onChange(opt.value); onFieldChange?.(fieldId, opt.value); } }}
               className="w-4 h-4 accent-blue-600"
             />
             <span className="text-gray-700">{opt.label}</span>

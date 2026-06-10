@@ -7,6 +7,8 @@ export interface DateFieldProps {
   fieldId: string;
   label?: string;
   editMode?: boolean;
+  isReadonly?: boolean;
+  onFieldChange?: (fieldId: string, value: unknown) => void;
   onPropsChange?: (patch: Record<string, unknown>) => void;
 }
 
@@ -14,22 +16,28 @@ export const DateField: React.FC<DateFieldProps> = ({
   fieldId,
   label = "Date",
   editMode = false,
+  isReadonly = false,
+  onFieldChange,
   onPropsChange,
 }) => {
   const { value, onChange } = useFormField(fieldId);
+  const disabled = editMode || isReadonly;
 
   return (
     <div className="flex flex-col gap-1 p-3 bg-white rounded-lg border border-gray-200">
       <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
         {label}
+        {isReadonly && !editMode && (
+          <span className="ml-2 text-[10px] text-amber-500 normal-case font-normal">read-only</span>
+        )}
       </label>
       <input
         type="date"
         value={(value as string) ?? ""}
-        onChange={(e) => onChange(e.target.value)}
-        disabled={editMode}
+        onChange={(e) => { onChange(e.target.value); onFieldChange?.(fieldId, e.target.value); }}
+        disabled={disabled}
         className={`w-full px-3 py-2 text-sm border rounded-md outline-none transition-colors ${
-          editMode
+          disabled
             ? "bg-gray-50 border-dashed border-gray-300 text-gray-400 cursor-not-allowed"
             : "bg-white border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
         }`}

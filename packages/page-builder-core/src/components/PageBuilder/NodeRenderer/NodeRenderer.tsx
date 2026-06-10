@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import type { ComponentDefinition, ILayoutData, PageNode } from "../../../models/pageBuilder";
+import type { ComponentDefinition, FieldCondition, ILayoutData, PageNode } from "../../../models/pageBuilder";
 import { LAYOUT_PRESETS } from "../../../models/pageBuilder";
 import type { NodeRendererContext } from "./model/model";
 import { LayoutPicker } from "../LayoutPicker";
@@ -142,6 +142,33 @@ const AddItemPanel: React.FC<{
     </div>
   );
 };
+
+// ─── Condition evaluator ─────────────────────────────────────────────────────
+
+function evaluateConditions(
+  conditions: FieldCondition[] | undefined,
+  fieldValues: Record<string, unknown>,
+): { isReadonly: boolean; isHidden: boolean } {
+  let isReadonly = false;
+  let isHidden = false;
+  for (const cond of conditions ?? []) {
+    const v = fieldValues[cond.when];
+    let matches = false;
+    switch (cond.operator) {
+      case "eq":       matches = v === cond.value; break;
+      case "neq":      matches = v !== cond.value; break;
+      case "empty":    matches = v === undefined || v === null || v === ""; break;
+      case "notEmpty": matches = v !== undefined && v !== null && v !== ""; break;
+    }
+    if (matches) {
+      if (cond.then === "hide")     isHidden   = true;
+      if (cond.then === "show")     isHidden   = false;
+      if (cond.then === "readonly") isReadonly = true;
+      if (cond.then === "editable") isReadonly = false;
+    }
+  }
+  return { isReadonly, isHidden };
+}
 
 // ─── NodeRenderer ─────────────────────────────────────────────────────────────
 
@@ -441,6 +468,10 @@ const ComponentItem: React.FC<{
   const def = components.find((c) => c.name === node.componentName);
   if (!def) return null;
 
+  const { isReadonly, isHidden } = evaluateConditions(node.conditions, ctx.fieldValues);
+  // In edit mode always render so the builder can show all components
+  if (isHidden && !ctx.isEditMode) return null;
+
   const Component = def.component;
   return (
     <div
@@ -461,11 +492,15 @@ const ComponentItem: React.FC<{
         borderRadius: "var(--pb-radius-sm, 6px)",
         transition: "outline-color 0.15s",
         cursor: ctx.isEditMode ? "pointer" : "default",
+        ...(isHidden && ctx.isEditMode ? { opacity: 0.35 } : {}),
       }}
     >
       <Component
         {...(node.componentProps as object)}
         editMode={ctx.isEditMode}
+        isReadonly={isReadonly}
+        fieldValues={ctx.fieldValues}
+        onFieldChange={ctx.onFieldChange}
         onPropsChange={(patch: Record<string, unknown>) =>
           ctx.onUpdateComponentProps(node.uniqueId, patch)
         }

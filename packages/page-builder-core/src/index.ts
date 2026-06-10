@@ -28,6 +28,9 @@ export type {
   ComponentControlsRenderProps,
   SectionWrapperRenderProps,
   SubSectionWrapperRenderProps,
+  FieldCondition,
+  FieldConditionOperator,
+  FieldConditionAction,
 } from "./models/pageBuilder";
 
 export type { PageBuilderProps, PageBuilderClassNames, PageBuilderHandle } from "./components/PageBuilder";

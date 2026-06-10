@@ -8,6 +8,8 @@ export interface SwitchFieldProps {
   label?: string;
   description?: string;
   editMode?: boolean;
+  isReadonly?: boolean;
+  onFieldChange?: (fieldId: string, value: unknown) => void;
   onPropsChange?: (patch: Record<string, unknown>) => void;
 }
 
@@ -16,10 +18,13 @@ export const SwitchField: React.FC<SwitchFieldProps> = ({
   label = "Toggle",
   description,
   editMode = false,
+  isReadonly = false,
+  onFieldChange,
   onPropsChange,
 }) => {
   const { value, onChange } = useFormField(fieldId);
   const checked = (value as boolean) ?? false;
+  const disabled = editMode || isReadonly;
 
   return (
     <div className="flex flex-col p-3 bg-white rounded-lg border border-gray-200 gap-2">
@@ -32,10 +37,10 @@ export const SwitchField: React.FC<SwitchFieldProps> = ({
           type="button"
           role="switch"
           aria-checked={checked}
-          disabled={editMode}
-          onClick={() => !editMode && onChange(!checked)}
+          disabled={disabled}
+          onClick={() => { if (!disabled) { onChange(!checked); onFieldChange?.(fieldId, !checked); } }}
           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-            editMode
+            disabled
               ? "cursor-not-allowed opacity-50"
               : "cursor-pointer"
           } ${checked ? "bg-blue-600" : "bg-gray-200"}`}

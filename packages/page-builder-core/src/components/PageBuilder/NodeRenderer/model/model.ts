@@ -38,6 +38,12 @@ export interface NodeRendererContext {
   /** Maximum columns per row at desktop width. Default: 4. */
   maxColumnsPerRow: number;
 
+  // ── field conditions ──────────────────────────────────────────────────────
+  /** Current form-wide field values. Components read this to know sibling field state. */
+  fieldValues: Record<string, unknown>;
+  /** Forwarded to each component so it can report its own value change. */
+  onFieldChange?: (fieldId: string, value: unknown) => void;
+
   // ── render-prop overrides ─────────────────────────────────────────────────
   renderLayoutPicker?: (props: LayoutPickerRenderProps) => React.ReactNode;
   renderComponentPicker?: (props: ComponentPickerRenderProps) => React.ReactNode;

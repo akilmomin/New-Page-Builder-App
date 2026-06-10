@@ -12,6 +12,22 @@ export interface PageNode {
   readonly children?: readonly PageNode[];
   readonly componentName?: string;
   readonly componentProps?: Record<string, unknown>;
+  readonly conditions?: FieldCondition[];
+}
+
+// ─── Field Conditions ─────────────────────────────────────────────────────────
+
+export type FieldConditionOperator = "eq" | "neq" | "empty" | "notEmpty";
+export type FieldConditionAction = "hide" | "show" | "readonly" | "editable";
+
+export interface FieldCondition {
+  /** The `fieldId` of the field whose value to watch. */
+  when: string;
+  operator: FieldConditionOperator;
+  /** Value to compare against. Not needed for "empty" / "notEmpty". */
+  value?: unknown;
+  /** What to apply when the condition matches. */
+  then: FieldConditionAction;
 }
 
 // ─── Component Registry ───────────────────────────────────────────────────────
@@ -21,7 +37,17 @@ export interface ComponentDefinition<P = any> {
   name: string;
   label: string;
   icon?: React.ReactNode;
-  component: React.ComponentType<P & { editMode?: boolean }>;
+  component: React.ComponentType<
+    P & {
+      editMode?: boolean;
+      /** True when a field condition resolves to "readonly" for this component. */
+      isReadonly?: boolean;
+      /** Current form-wide field values, forwarded from the PageBuilder `fieldValues` prop. */
+      fieldValues?: Record<string, unknown>;
+      /** Call this inside your component when the user changes the field value. */
+      onFieldChange?: (fieldId: string, value: unknown) => void;
+    }
+  >;
   defaultProps?: Partial<P>;
   category?: string;
   description?: string;
@@ -143,6 +169,16 @@ export interface ILayoutData {
    * Carried through the ILayoutData ↔ PageNode round-trip and included in serialized output.
    */
   componentProps?: Record<string, unknown>;
+  /**
+   * Declarative visibility/readonly rules evaluated against the live `fieldValues` prop.
+   * Rules are evaluated in order; later rules override earlier ones.
+   *
+   * @example
+   * conditions: [
+   *   { when: "isBusiness", operator: "eq", value: false, then: "hide" },
+   * ]
+   */
+  conditions?: FieldCondition[];
   /**
    * Runtime render override — called instead of the registry component.
    * NEVER serialized; stripped automatically by onChange / serializeLayout.

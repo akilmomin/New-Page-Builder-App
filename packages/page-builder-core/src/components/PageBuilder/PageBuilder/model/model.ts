@@ -164,6 +164,23 @@ export interface PageBuilderProps {
     props: Record<string, unknown>,
   ) => void;
 
+  // ── Field conditions ──────────────────────────────────────────────────────
+  /**
+   * Current form-wide field values, keyed by `fieldId`.
+   * The builder forwards this to every component and evaluates `conditions`
+   * on each `ILayoutData` item against this map to compute `isReadonly` / `isHidden`.
+   *
+   * @example
+   * const [formValues, setFormValues] = useState<Record<string, unknown>>({});
+   * <PageBuilder fieldValues={formValues} onFieldChange={(id, val) => setFormValues(p => ({ ...p, [id]: val }))} />
+   */
+  fieldValues?: Record<string, unknown>;
+  /**
+   * Called by a component when its field value changes.
+   * Update your `fieldValues` state here so conditions re-evaluate on the next render.
+   */
+  onFieldChange?: (fieldId: string, value: unknown) => void;
+
   // ── History ───────────────────────────────────────────────────────────────
   /**
    * Maximum number of undo steps to retain. Older entries are dropped first.

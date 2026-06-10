@@ -84,6 +84,7 @@ export const layoutDataToNodes = (items: ILayoutData[]): readonly PageNode[] => 
           uniqueId: item.Id,
           componentName: item.ComponentName,
           ...(item.componentProps ? { componentProps: item.componentProps } : {}),
+          ...(item.conditions ? { conditions: item.conditions } : {}),
         }));
 
       return {
@@ -150,6 +151,7 @@ export const nodesToLayoutData = (nodes: readonly PageNode[]): ILayoutData[] => 
             VerticalIndex: vIdx,
             ComponentName: comp.componentName ?? "",
             ...(comp.componentProps ? { componentProps: comp.componentProps } : {}),
+            ...(comp.conditions ? { conditions: comp.conditions } : {}),
           });
         });
       }
