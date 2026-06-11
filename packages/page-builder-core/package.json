@@ -1,6 +1,6 @@
 {
   "name": "react-page-and-form-builder",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "UI-agnostic React page-builder component with 12-column grid, section/component picker, and full render-prop overrides.",
   "author": "Akil Momin",
   "license": "MIT",
@@ -43,18 +43,18 @@
     "src/styles"
   ],
   "scripts": {
-    "build":    "tsup",
-    "dev":      "tsup --watch",
-    "typecheck":"tsc --noEmit"
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "react":     ">=17.0.0",
+    "react": ">=17.0.0",
     "react-dom": ">=17.0.0"
   },
   "devDependencies": {
-    "@types/react":     "^19.0.0",
+    "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "tsup":             "^8.0.2",
-    "typescript":       "^5.4.5"
+    "tsup": "^8.0.2",
+    "typescript": "^5.4.5"
   }
 }
