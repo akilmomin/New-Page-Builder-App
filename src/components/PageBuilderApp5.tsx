@@ -130,8 +130,9 @@ export function PageBuilderApp5() {
     const newOrder = arrayMove(sectionOrder, oldIndex, newIndex);
     const reordered = reorderBySections(layout, newOrder);
 
+    // Fix #8: fully controlled — setLayout pushes history then calls onChange={setLayout},
+    // which updates layout state. No explicit setLayout(reordered) needed here.
     ref.current?.setLayout(reordered);
-    setLayout(reordered);
   };
 
   return (
@@ -166,10 +167,10 @@ export function PageBuilderApp5() {
             <PageBuilder
               ref={ref}
               components={components}
-              defaultValue={initialLayout}
+              value={layout}
+              onChange={setLayout}
               editMode={editMode}
               onEditModeChange={setEditMode}
-              onChange={setLayout}
               spacing={16}
               tabletMaxColumnsPerRow={3}
               maxColumnsPerRow={3}

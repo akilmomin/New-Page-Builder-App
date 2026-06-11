@@ -55,7 +55,7 @@ export const ComponentPicker: React.FC<ComponentPickerProps> = ({
                     hovered={hoveredTile === def.name}
                     onHover={setHoveredTile}
                     onSelect={() => {
-                      onSelectComponent(def.name);
+                      onSelectComponent(def.name, def.defaultProps as Record<string, unknown> | undefined);
                       onClose();
                     }}
                   />

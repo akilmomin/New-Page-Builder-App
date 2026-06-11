@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { PageBuilder } from "react-page-and-form-builder";
-import type { ComponentDefinition, ILayoutData, SerializableLayoutItem } from "react-page-and-form-builder";
-import { FormProvider, useFormValues } from "@/components/form/FormContext";
+import type { ComponentDefinition, ILayoutData, PageBuilderProps, SerializableLayoutItem } from "react-page-and-form-builder";
+import { FormProvider, useFormContext, useFormValues } from "@/components/form/FormContext";
 import { TextField } from "@/components/form/TextField";
 import { DateField } from "@/components/form/DateField";
 import { SwitchField } from "@/components/form/SwitchField";
@@ -150,6 +150,18 @@ const formInitialLayout: ILayoutData[] = [
   },
 ];
 
+// ─── Bridge: reads from FormContext and drives PageBuilder's condition system ─
+// Fix #7: FormContext is the single source of truth for field values; this
+// bridge removes the duplicate fieldValues state that previously lived in the
+// parent component alongside FormProvider.
+
+type PageBuilderBridgeProps = Omit<PageBuilderProps, "fieldValues" | "onFieldChange">;
+
+function PageBuilderFormBridge(props: PageBuilderBridgeProps) {
+  const { values, setValue } = useFormContext();
+  return <PageBuilder {...props} fieldValues={values} onFieldChange={setValue} />;
+}
+
 // ─── SaveButton reads form values from context ────────────────────────────────
 
 function SaveFormButton({
@@ -174,11 +186,6 @@ export function PageBuilderApp3() {
   const [editMode, setEditMode] = useState(false);
   const [savedData, setSavedData] = useState<Record<string, unknown> | null>(null);
   const [layoutData, setLayoutData] = useState<SerializableLayoutItem[] | null>(null);
-  const [fieldValues, setFieldValues] = useState<Record<string, unknown>>({});
-
-  const handleFieldChange = (fieldId: string, value: unknown) => {
-    setFieldValues((prev) => ({ ...prev, [fieldId]: value }));
-  };
 
   const handleSave = (values: Record<string, unknown>) => {
     setSavedData(values);
@@ -213,34 +220,9 @@ export function PageBuilderApp3() {
           )}
         </div>
 
-        {/* Builder */}
-        <div className="p-4 bg-gray-50 min-h-screen">
-          {!editMode && (
-            <p className="text-xs text-gray-400 mb-3 text-center">
-              Fill in the form below, then click Save Form.
-            </p>
-          )}
-          {editMode && (
-            <p className="text-xs text-blue-500 mb-3 text-center">
-              Edit mode: add, remove, or rearrange form fields.
-            </p>
-          )}
-
-          <PageBuilder
-            components={formComponents}
-            defaultValue={formInitialLayout}
-            editMode={editMode}
-            onEditModeChange={setEditMode}
-            onChange={setLayoutData}
-            fieldValues={fieldValues}
-            onFieldChange={handleFieldChange}
-            spacing={8}
-          />
-        </div>
-
-        {/* Saved data output */}
+        {/* Saved data output — rendered above the form so it's visible without scrolling */}
         {savedData && (
-          <div className="mx-4 mb-6 p-4 bg-white border border-green-200 rounded-xl shadow-sm">
+          <div className="mx-4 mt-3 p-4 bg-white border border-green-200 rounded-xl shadow-sm">
             <div className="flex items-center gap-2 mb-3">
               <span className="text-green-600 font-semibold text-sm">✓ Form Saved</span>
               <button
@@ -272,6 +254,29 @@ export function PageBuilderApp3() {
             </details>
           </div>
         )}
+
+        {/* Builder */}
+        <div className="p-4 bg-gray-50 min-h-screen">
+          {!editMode && (
+            <p className="text-xs text-gray-400 mb-3 text-center">
+              Fill in the form below, then click Save Form.
+            </p>
+          )}
+          {editMode && (
+            <p className="text-xs text-blue-500 mb-3 text-center">
+              Edit mode: add, remove, or rearrange form fields.
+            </p>
+          )}
+
+          <PageBuilderFormBridge
+            components={formComponents}
+            defaultValue={formInitialLayout}
+            editMode={editMode}
+            onEditModeChange={setEditMode}
+            onChange={setLayoutData}
+            spacing={8}
+          />
+        </div>
       </div>
     </FormProvider>
   );

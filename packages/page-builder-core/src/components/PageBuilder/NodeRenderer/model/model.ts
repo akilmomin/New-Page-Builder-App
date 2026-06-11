@@ -23,7 +23,7 @@ export interface NodeRendererContext {
   // tree mutations
   onAddSection: (targetId: string, columns: readonly number[]) => void;
   onAddSectionAfter: (parentId: string, afterIndex: number, columns: readonly number[]) => void;
-  onAddComponent: (targetId: string, name: string) => void;
+  onAddComponent: (targetId: string, name: string, componentProps?: Record<string, unknown>) => void;
   onDeleteNode: (id: string) => void;
   onCloneNode: (id: string) => void;
   onChangeLayout: (sectionId: string, columns: readonly number[]) => void;

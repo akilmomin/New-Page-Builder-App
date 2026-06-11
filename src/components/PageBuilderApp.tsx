@@ -12,7 +12,6 @@ const components: ComponentDefinition[] = [
   { name: "BusinessPaper", label: "Business Paper",icon: "📄", component: BusinessPaper, category: "Content" },
   { name: "Event",         label: "Events",        icon: "📅", component: Event,         category: "Content" },
   { name: "TilesQuickLink",label: "Quick Tiles",   icon: "🔷", component: TilesQuickLink,category: "Navigation" },
-  { name: "TilesQuickLink1",label: "Quick Tiles",   icon: "🔷", component: TilesQuickLink,category: "Navigation" },
 ];
 
 interface SelectedComponent {

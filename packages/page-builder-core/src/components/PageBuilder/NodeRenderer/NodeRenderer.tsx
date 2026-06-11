@@ -25,7 +25,7 @@ const SECTION_PRESETS: { key: string; label: string; spans: readonly number[] }[
 const AddItemPanel: React.FC<{
   components: ComponentDefinition[];
   canNestSection: boolean;
-  onAddComponent: (name: string) => void;
+  onAddComponent: (name: string, defaultProps?: Record<string, unknown>) => void;
   onAddSection: (cols: readonly number[]) => void;
   onClose: () => void;
 }> = ({ components, canNestSection, onAddComponent, onAddSection, onClose }) => {
@@ -112,7 +112,7 @@ const AddItemPanel: React.FC<{
                       ...compTileStyle,
                       ...(hoveredTile === def.name ? compTileHoverStyle : {}),
                     }}
-                    onClick={() => { onAddComponent(def.name); onClose(); }}
+                    onClick={() => { onAddComponent(def.name, def.defaultProps as Record<string, unknown> | undefined); onClose(); }}
                     onMouseEnter={() => setHoveredTile(def.name)}
                     onMouseLeave={() => setHoveredTile(null)}
                     title={def.description}
@@ -431,7 +431,7 @@ const SubSectionItem: React.FC<NodeItemProps> = ({ node, components, ctx, depth 
             ctx.renderComponentPicker ? (
               ctx.renderComponentPicker({
                 components,
-                onSelectComponent: (name) => { ctx.onAddComponent(node.uniqueId, name); ctx.onSetPopUp(null); },
+                onSelectComponent: (name, defaultProps) => { ctx.onAddComponent(node.uniqueId, name, defaultProps); ctx.onSetPopUp(null); },
                 onClose: () => ctx.onSetPopUp(null),
                 ...(canNestSection && {
                   onAddSection: (cols) => { ctx.onAddSection(node.uniqueId, cols); ctx.onSetPopUp(null); },
@@ -441,7 +441,7 @@ const SubSectionItem: React.FC<NodeItemProps> = ({ node, components, ctx, depth 
               <AddItemPanel
                 components={components}
                 canNestSection={canNestSection}
-                onAddComponent={(name) => { ctx.onAddComponent(node.uniqueId, name); ctx.onSetPopUp(null); }}
+                onAddComponent={(name, defaultProps) => { ctx.onAddComponent(node.uniqueId, name, defaultProps); ctx.onSetPopUp(null); }}
                 onAddSection={(cols) => { ctx.onAddSection(node.uniqueId, cols); ctx.onSetPopUp(null); }}
                 onClose={() => ctx.onSetPopUp(null)}
               />

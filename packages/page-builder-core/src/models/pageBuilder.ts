@@ -97,7 +97,8 @@ export interface LayoutPickerRenderProps {
 
 export interface ComponentPickerRenderProps {
   components: ComponentDefinition[];
-  onSelectComponent: (name: string) => void;
+  /** Second arg carries the component's `defaultProps` so the builder can seed initial props. */
+  onSelectComponent: (name: string, defaultProps?: Record<string, unknown>) => void;
   onClose: () => void;
   /**
    * Present only when the column can hold a nested section (depth 0).

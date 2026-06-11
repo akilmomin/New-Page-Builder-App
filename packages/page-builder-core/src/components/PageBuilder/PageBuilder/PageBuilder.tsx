@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useImperativeHandle, useRef, forwardRef } from "react";
+import React, { useEffect, useImperativeHandle, useMemo, useRef, forwardRef } from "react";
 import { LAYOUT_PRESETS } from "../../../models/pageBuilder";
 import type { PageBuilderProps, PageBuilderHandle } from "./model/model";
 import { usePageBuilder } from "./hook/usePageBuilder";
@@ -47,7 +47,7 @@ export const PageBuilder = forwardRef<PageBuilderHandle, PageBuilderProps>(
 
     useImperativeHandle(ref, () => ({
       reset: pb.resetLayout,
-      save: () => handleSave?.(),
+      save: () => handleSave(),
       undo: pb.undo,
       redo: pb.redo,
       updateComponentProps: pb.updateComponentProps,
@@ -93,7 +93,9 @@ export const PageBuilder = forwardRef<PageBuilderHandle, PageBuilderProps>(
       return () => document.removeEventListener("keydown", handleKeyDown);
     }, [pb.isEditMode, pb.undo, pb.redo]);
 
-    const ctx = {
+    // Fix #5: Memoize the context object so NodeRenderer and its entire subtree
+    // only re-render when something that actually affects them changes.
+    const ctx = useMemo(() => ({
       isEditMode: pb.isEditMode,
       activeSectionId: pb.activeSectionId,
       activeComponentId: pb.activeComponentId,
@@ -123,7 +125,37 @@ export const PageBuilder = forwardRef<PageBuilderHandle, PageBuilderProps>(
       renderComponentControls,
       renderSectionWrapper,
       renderSubSectionWrapper,
-    };
+    }), [
+      pb.isEditMode,
+      pb.activeSectionId,
+      pb.activeComponentId,
+      pb.popUpId,
+      pb.showSection,
+      spacing,
+      pb.setActiveSection,
+      pb.setActiveComponent,
+      pb.setPopUp,
+      pb.setShowSection,
+      pb.addSection,
+      pb.addSectionAfter,
+      pb.addComponent,
+      pb.changeLayout,
+      pb.deleteNode,
+      pb.cloneNode,
+      pb.updateComponentProps,
+      mobileBreakpoint,
+      tabletBreakpoint,
+      tabletMaxColumnsPerRow,
+      maxColumnsPerRow,
+      fieldValues,
+      onFieldChange,
+      renderLayoutPicker,
+      renderComponentPicker,
+      renderSectionControls,
+      renderComponentControls,
+      renderSectionWrapper,
+      renderSubSectionWrapper,
+    ]);
 
     const handleAddRootClick = (e: React.MouseEvent) => {
       e.stopPropagation();
