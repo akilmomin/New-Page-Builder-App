@@ -1,4 +1,4 @@
-import { useCallback, useReducer, useRef, useState } from "react";
+import { useCallback, useMemo, useReducer, useRef, useState } from "react";
 import type { ILayoutData, PageNode, SerializableLayoutItem } from "../../../../models/pageBuilder";
 import {
   addSectionToNode,
@@ -175,16 +175,32 @@ export const usePageBuilder = ({
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
 
-  // In controlled mode, derive nodes from the external ILayoutData[].
-  const nodes = isControlled ? layoutDataToNodes(value) : state.nodes;
+  // Fix #3: Derive nodes only when the relevant input changes; avoids re-running
+  // layoutDataToNodes on every render in controlled mode.
+  const nodes = useMemo(
+    () => (isControlled ? layoutDataToNodes(value ?? []) : state.nodes),
+    [isControlled, value, state.nodes],
+  );
 
   // ── History tracking ────────────────────────────────────────────────────────
   // Stored in refs to avoid extra re-renders; only canUndo/canRedo are state.
-  const initialNodes = defaultValue ? layoutDataToNodes(defaultValue) : [];
-  const historyRef = useRef<readonly (readonly PageNode[])[]>([initialNodes]);
+
+  // Fix #4: Compute the initial history snapshot once via useState lazy initializer
+  // instead of re-running layoutDataToNodes(defaultValue) on every render.
+  const [initialHistoryNodes] = useState<readonly PageNode[]>(
+    () => (defaultValue ? layoutDataToNodes(defaultValue) : []),
+  );
+  const historyRef = useRef<readonly (readonly PageNode[])[]>([initialHistoryNodes]);
   const cursorRef = useRef<number>(0);
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
+
+  // Fix #6: Stable refs that always hold the latest state/value so dispatchTree
+  // doesn't need to list the entire state object as a dependency.
+  const stateRef = useRef(state);
+  stateRef.current = state;
+  const valueRef = useRef(value);
+  valueRef.current = value;
 
   const pushHistory = useCallback(
     (nextNodes: readonly PageNode[]) => {
@@ -212,11 +228,16 @@ export const usePageBuilder = ({
   );
 
   // ── dispatchTree — all layout mutations go through here ────────────────────
+  // Fix #6: Uses stateRef/valueRef instead of closing over state/value directly,
+  // so this callback (and everything that depends on it) only rebuilds when
+  // isControlled or pushHistory changes — not on every UI state update.
   const dispatchTree = useCallback(
     (action: TreeAction) => {
-      const currentNodes = isControlled ? layoutDataToNodes(value ?? []) : state.nodes;
+      const currentNodes = isControlled
+        ? layoutDataToNodes(valueRef.current ?? [])
+        : stateRef.current.nodes;
       // Use reducer as a pure function to compute nextNodes synchronously
-      const nextNodes = reducer({ ...state, nodes: currentNodes }, action).nodes;
+      const nextNodes = reducer({ ...stateRef.current, nodes: currentNodes }, action).nodes;
 
       if (isControlled) {
         onChangeRef.current?.(serializeLayout(nodesToLayoutData(nextNodes)));
@@ -229,7 +250,7 @@ export const usePageBuilder = ({
 
       pushHistory(nextNodes);
     },
-    [isControlled, state, value, pushHistory],
+    [isControlled, pushHistory],
   );
 
   const addSection = useCallback(

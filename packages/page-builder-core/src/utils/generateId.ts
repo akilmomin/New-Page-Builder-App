@@ -1,8 +1,11 @@
 /**
- * Generates a short 6-character alphanumeric ID.
- * Pure function — no side-effects.
+ * Generates a cryptographically random 8-character alphanumeric ID.
+ * Uses crypto.getRandomValues for better entropy than Math.random.
+ * 62^8 ≈ 218 trillion combinations — collision risk is negligible for any realistic layout size.
  */
 export const generateId = (): string => {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+  const bytes = new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => chars[b % chars.length]).join("");
 };

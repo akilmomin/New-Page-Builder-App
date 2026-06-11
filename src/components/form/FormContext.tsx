@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useCallback, useContext, useState } from "react";
 
 interface FormContextValue {
   values: Record<string, unknown>;
@@ -14,8 +14,10 @@ const FormContext = createContext<FormContextValue>({
 
 export const FormProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [values, setValues] = useState<Record<string, unknown>>({});
-  const setValue = (id: string, val: unknown) =>
-    setValues((prev) => ({ ...prev, [id]: val }));
+  const setValue = useCallback(
+    (id: string, val: unknown) => setValues((prev) => ({ ...prev, [id]: val })),
+    [],
+  );
   return <FormContext.Provider value={{ values, setValue }}>{children}</FormContext.Provider>;
 };
 
@@ -28,3 +30,6 @@ export const useFormField = (fieldId: string) => {
 };
 
 export const useFormValues = () => useContext(FormContext).values;
+
+/** Returns both the current values map and the setter — use to bridge FormContext into other systems. */
+export const useFormContext = () => useContext(FormContext);

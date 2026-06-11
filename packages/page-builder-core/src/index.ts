@@ -16,6 +16,7 @@ export type {
   PageNode,
   GridColumn,
   ComponentDefinition,
+  LayoutPreset,
   LayoutPresetKey,
   ILayoutData,
   IGridItem,
