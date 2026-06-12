@@ -181,6 +181,13 @@ export interface ILayoutData {
    */
   conditions?: FieldCondition[];
   /**
+   * When set, this item belongs to a Section that is nested inside the SubSection
+   * identified by this value. The value is the reconstructed SubSection ID in the form
+   * `${parentSectionId}__col${columnIndex}` — the same scheme used by layoutDataToNodes.
+   * Carried through serializeLayout so nested layouts survive server round-trips.
+   */
+  nestedInSubSectionId?: string;
+  /**
    * Runtime render override — called instead of the registry component.
    * NEVER serialized; stripped automatically by onChange / serializeLayout.
    */

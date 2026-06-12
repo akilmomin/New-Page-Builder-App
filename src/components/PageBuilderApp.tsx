@@ -37,7 +37,8 @@ export function PageBuilderApp() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [isDirty]);
 
-  const handleChange = (_layout: SerializableLayoutItem[]) => {
+  const handleChange = (layout: SerializableLayoutItem[]) => {
+     console.log("change layout:", layout);
     setIsDirty(true);
   };
 
@@ -125,6 +126,7 @@ export function PageBuilderApp() {
             ref={builderRef}
             components={components}
             defaultValue={initialLayout}
+            storageKey="pagebuilder-layout"
             editMode={editMode}
             onEditModeChange={setEditMode}
             onChange={handleChange}
@@ -138,7 +140,7 @@ export function PageBuilderApp() {
             }}
             spacing={16}
             tabletMaxColumnsPerRow={3}
-            maxColumnsPerRow={4}
+            maxColumnsPerRow={6}
           />
         </div>
       </div>

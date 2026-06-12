@@ -12,14 +12,31 @@ import type { ILayoutData, PageNode, SerializableLayoutItem } from "../models/pa
 // ─── Serialization ────────────────────────────────────────────────────────────
 
 /**
- * Strip renderComponent (non-serializable) and empty-slot placeholders.
+ * Strip renderComponent (non-serializable) and plain empty-slot placeholders.
+ *
+ * Structural placeholders — empty columns that are parent containers for nested
+ * sections — are kept because they are required to reconstruct nesting on load.
  * Safe to JSON.stringify and send to a server.
  */
-export const serializeLayout = (items: ILayoutData[]): SerializableLayoutItem[] =>
-  items
-    .filter((item) => item.ComponentName !== "")
+export const serializeLayout = (items: ILayoutData[]): SerializableLayoutItem[] => {
+  // Collect SubSection IDs that directly contain nested sections.
+  const subSectionsWithNested = new Set<string>();
+  for (const item of items) {
+    if (item.nestedInSubSectionId) {
+      subSectionsWithNested.add(item.nestedInSubSectionId);
+    }
+  }
+
+  return items
+    .filter((item) => {
+      if (item.ComponentName !== "") return true;
+      // Keep structural placeholders for columns that parent a nested section.
+      const mySubSectionId = `${item.SectionId}__col${item.ColumnIndex}`;
+      return subSectionsWithNested.has(mySubSectionId);
+    })
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     .map(({ renderComponent, ...rest }) => rest);
+};
 
 // ─── Internal helpers ──────────────────────────────────────────────────────────
 
@@ -47,82 +64,103 @@ const stableKeys = <T>(arr: T[], getKey: (item: T) => string): string[] => {
 // ─── ILayoutData[] → PageNode[] ───────────────────────────────────────────────
 
 /**
- * Convert flat ILayoutData[] into the Section → SubSection → Component tree
+ * Convert flat ILayoutData[] into the Section → SubSection → (Component | Section) tree
  * expected by the builder engine.
  *
  * - Each unique SectionId becomes a Section node, ordered by RowIndex.
  * - Each unique ColumnIndex within a section becomes a SubSection node.
+ * - Items with nestedInSubSectionId belong to sections nested inside that SubSection.
  * - Items are sorted by VerticalIndex and become Component nodes in their SubSection.
  * - Empty-slot items (ComponentName === "") produce an empty SubSection (no Component child).
  */
 export const layoutDataToNodes = (items: ILayoutData[]): readonly PageNode[] => {
-  const bySectionId = groupByKey(items, (item) => item.SectionId);
-  // Sort sections by RowIndex (section/row order on the page)
-  const sectionOrder = stableKeys(items, (item) => item.SectionId).sort(
-    (a, b) => (bySectionId[a][0]?.RowIndex ?? 0) - (bySectionId[b][0]?.RowIndex ?? 0),
+  const topLevelItems = items.filter((item) => !item.nestedInSubSectionId);
+  const nestedBySubSectionId = groupByKey(
+    items.filter((item) => !!item.nestedInSubSectionId),
+    (item) => item.nestedInSubSectionId!,
   );
 
-  return sectionOrder.map((sectionId) => {
-    const sectionItems = bySectionId[sectionId];
-    const byColIndex = groupByKey(sectionItems, (item) => String(item.ColumnIndex));
-    const colKeys = stableKeys(sectionItems, (item) => String(item.ColumnIndex)).sort(
-      (a, b) => Number(a) - Number(b),
+  const buildSections = (sectionItems: ILayoutData[]): readonly PageNode[] => {
+    if (sectionItems.length === 0) return [];
+
+    const bySectionId = groupByKey(sectionItems, (item) => item.SectionId);
+    const sectionOrder = stableKeys(sectionItems, (item) => item.SectionId).sort(
+      (a, b) => (bySectionId[a][0]?.RowIndex ?? 0) - (bySectionId[b][0]?.RowIndex ?? 0),
     );
 
-    const numCols = colKeys.length;
-
-    const subSections: PageNode[] = colKeys.map((colKey, pos) => {
-      const colItems = [...byColIndex[colKey]].sort(
-        (a, b) => (a.VerticalIndex ?? 0) - (b.VerticalIndex ?? 0),
+    return sectionOrder.map((sectionId) => {
+      const secItems = bySectionId[sectionId];
+      const byColIndex = groupByKey(secItems, (item) => String(item.ColumnIndex));
+      const colKeys = stableKeys(secItems, (item) => String(item.ColumnIndex)).sort(
+        (a, b) => Number(a) - Number(b),
       );
-      const span = colItems[0].ColumnSpan ?? Math.floor(12 / Math.max(numCols, 1));
 
-      const componentChildren: PageNode[] = colItems
-        .filter((item) => item.ComponentName !== "")
-        .map((item) => ({
-          type: "Component" as const,
-          uniqueId: item.Id,
-          componentName: item.ComponentName,
-          ...(item.componentProps ? { componentProps: item.componentProps } : {}),
-          ...(item.conditions ? { conditions: item.conditions } : {}),
-        }));
+      const numCols = colKeys.length;
+
+      const subSections: PageNode[] = colKeys.map((colKey, pos) => {
+        const colItems = [...byColIndex[colKey]].sort(
+          (a, b) => (a.VerticalIndex ?? 0) - (b.VerticalIndex ?? 0),
+        );
+        const span = colItems[0].ColumnSpan ?? Math.floor(12 / Math.max(numCols, 1));
+        const subSectionId = `${sectionId}__col${pos}`;
+
+        const componentChildren: PageNode[] = colItems
+          .filter((item) => item.ComponentName !== "")
+          .map((item) => ({
+            type: "Component" as const,
+            uniqueId: item.Id,
+            componentName: item.ComponentName,
+            ...(item.componentProps ? { componentProps: item.componentProps } : {}),
+            ...(item.conditions ? { conditions: item.conditions } : {}),
+          }));
+
+        const nestedSections = buildSections(nestedBySubSectionId[subSectionId] ?? []);
+
+        return {
+          type: "SubSection" as const,
+          isGrid: true,
+          gridValue: span,
+          // Stable ID derived from section + column position so builder ops can find it.
+          uniqueId: subSectionId,
+          children: [...componentChildren, ...nestedSections],
+        };
+      });
 
       return {
-        type: "SubSection" as const,
+        type: "Section" as const,
         isGrid: true,
-        gridValue: span,
-        // Stable ID derived from section + column position so builder ops can find it.
-        uniqueId: `${sectionId}__col${pos}`,
-        children: componentChildren,
+        gridValue: "12",
+        uniqueId: sectionId,
+        children: subSections,
       };
     });
+  };
 
-    return {
-      type: "Section" as const,
-      isGrid: true,
-      gridValue: "12",
-      uniqueId: sectionId,
-      children: subSections,
-    };
-  });
+  return buildSections(topLevelItems);
 };
 
 // ─── PageNode[] → ILayoutData[] ───────────────────────────────────────────────
 
 /**
  * Convert an internal PageNode[] tree back to a flat ILayoutData[].
- * Only processes the top-level Section → SubSection → Component depth.
+ * Handles Section → SubSection → (Component | nested Section) at any depth.
  *
  * Empty SubSections (no Component children) produce placeholder items with
  * ComponentName: "" so that column structure is preserved across round-trips.
- * These placeholders are stripped by serializeLayout() before onChange callbacks.
+ *
+ * Nested sections (Section children of a SubSection) produce items tagged with
+ * nestedInSubSectionId pointing to the parent SubSection's reconstructed ID
+ * (${sectionId}__col${colIndex}). serializeLayout keeps structural placeholders
+ * (those that parent a nested section) so nested layouts survive server round-trips.
  */
 export const nodesToLayoutData = (nodes: readonly PageNode[]): ILayoutData[] => {
   const items: ILayoutData[] = [];
 
-  const sections = nodes.filter((n) => n.type === "Section");
-
-  sections.forEach((section, sectionIdx) => {
+  const processSection = (
+    section: PageNode,
+    sectionIdx: number,
+    parentSubSectionId?: string,
+  ) => {
     const sectionId = section.uniqueId;
     const subSections = (section.children ?? []).filter((c) => c.type === "SubSection");
     const numCols = subSections.length;
@@ -130,8 +168,16 @@ export const nodesToLayoutData = (nodes: readonly PageNode[]): ILayoutData[] => 
     subSections.forEach((sub, colIndex) => {
       const span = Number(sub.gridValue) || Math.floor(12 / Math.max(numCols, 1));
       const components = (sub.children ?? []).filter((c) => c.type === "Component");
+      const nestedSections = (sub.children ?? []).filter((c) => c.type === "Section");
+      // The stable SubSection ID this column will receive after a layoutDataToNodes round-trip.
+      const reconstructedSubSectionId = `${sectionId}__col${colIndex}`;
+
+      const nestingProp: Pick<ILayoutData, "nestedInSubSectionId"> = parentSubSectionId
+        ? { nestedInSubSectionId: parentSubSectionId }
+        : {};
 
       if (components.length === 0) {
+        // Emit placeholder so column structure is preserved.
         items.push({
           Id: sub.uniqueId,
           SectionId: sectionId,
@@ -139,6 +185,7 @@ export const nodesToLayoutData = (nodes: readonly PageNode[]): ILayoutData[] => 
           ColumnIndex: colIndex,
           ColumnSpan: span,
           ComponentName: "",
+          ...nestingProp,
         });
       } else {
         components.forEach((comp, vIdx) => {
@@ -152,10 +199,20 @@ export const nodesToLayoutData = (nodes: readonly PageNode[]): ILayoutData[] => 
             ComponentName: comp.componentName ?? "",
             ...(comp.componentProps ? { componentProps: comp.componentProps } : {}),
             ...(comp.conditions ? { conditions: comp.conditions } : {}),
+            ...nestingProp,
           });
         });
       }
+
+      // Recurse into nested sections, tagging their items with this SubSection's ID.
+      nestedSections.forEach((nestedSection, nestedIdx) => {
+        processSection(nestedSection, nestedIdx, reconstructedSubSectionId);
+      });
     });
+  };
+
+  nodes.filter((n) => n.type === "Section").forEach((section, sectionIdx) => {
+    processSection(section, sectionIdx);
   });
 
   return items;

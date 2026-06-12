@@ -111,6 +111,17 @@ export interface PageBuilderProps {
    */
   onSaveChange?: (items: SerializableLayoutItem[]) => void;
 
+  /**
+   * localStorage key for automatic layout persistence.
+   * When provided, the builder loads the saved layout on mount (falling back to `defaultValue`)
+   * and writes to localStorage every time `save()` is triggered.
+   * Works with uncontrolled mode only — ignored when `value` is also provided.
+   *
+   * @example
+   * <PageBuilder storageKey="my-page-layout" defaultValue={initialLayout} />
+   */
+  storageKey?: string;
+
   // ── Render-prop slots (internal builder UI, not the toolbar) ───────────────
   renderAddTrigger?: (props: AddTriggerRenderProps) => React.ReactNode;
   renderLayoutPicker?: (props: LayoutPickerRenderProps) => React.ReactNode;
