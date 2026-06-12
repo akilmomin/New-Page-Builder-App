@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useImperativeHandle, useMemo, useRef, forwardRef } from "react";
+import React, { useEffect, useImperativeHandle, useMemo, useRef, useState, forwardRef } from "react";
 import { LAYOUT_PRESETS } from "../../../models/pageBuilder";
 import type { PageBuilderProps, PageBuilderHandle } from "./model/model";
 import { usePageBuilder } from "./hook/usePageBuilder";
@@ -24,6 +24,7 @@ export const PageBuilder = forwardRef<PageBuilderHandle, PageBuilderProps>(
       tabletMaxColumnsPerRow = 2,
       maxColumnsPerRow = 4,
       maxHistorySize,
+      storageKey,
       onSaveChange,
       onHistoryChange,
       onComponentSelect,
@@ -41,9 +42,36 @@ export const PageBuilder = forwardRef<PageBuilderHandle, PageBuilderProps>(
     },
     ref,
   ) => {
-    const pb = usePageBuilder({ value, onChange, defaultValue, editMode, onEditModeChange, maxHistorySize });
+    // When storageKey is provided, seed defaultValue from localStorage (uncontrolled mode only).
+    const [storedDefault] = useState<typeof defaultValue>(() => {
+      if (!storageKey || value !== undefined) return defaultValue;
+      try {
+        const raw = localStorage.getItem(storageKey);
+        if (raw) return JSON.parse(raw) as typeof defaultValue;
+      } catch { /* SSR or parse error — fall through */ }
+      return defaultValue;
+    });
 
-    const handleSave = () => onSaveChange?.(serializeLayout(nodesToLayoutData(pb.nodes)));
+    const pb = usePageBuilder({
+      value,
+      onChange,
+      defaultValue: storageKey && value === undefined ? storedDefault : defaultValue,
+      editMode,
+      onEditModeChange,
+      maxHistorySize,
+    });
+
+    // Always keep a ref to the latest nodes so handleSave never reads a stale closure.
+    const latestNodesRef = useRef(pb.nodes);
+    latestNodesRef.current = pb.nodes;
+
+    const handleSave = () => {
+      const data = serializeLayout(nodesToLayoutData(latestNodesRef.current));
+      if (storageKey) {
+        try { localStorage.setItem(storageKey, JSON.stringify(data)); } catch { /* SSR */ }
+      }
+      onSaveChange?.(data);
+    };
 
     useImperativeHandle(ref, () => ({
       reset: pb.resetLayout,
@@ -82,9 +110,12 @@ export const PageBuilder = forwardRef<PageBuilderHandle, PageBuilderProps>(
     }, [pb.activeComponentId, pb.nodes]);
 
     // Keyboard shortcuts: Ctrl/Cmd+Z = undo, Ctrl/Cmd+Y or Ctrl/Cmd+Shift+Z = redo
+    // Skip when focus is inside a text input so we don't steal browser/OS undo from the user.
     useEffect(() => {
       if (!pb.isEditMode) return;
       const handleKeyDown = (e: KeyboardEvent) => {
+        const t = e.target as HTMLElement;
+        if (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable) return;
         const mod = e.ctrlKey || e.metaKey;
         if (mod && e.key === "z" && !e.shiftKey) { e.preventDefault(); pb.undo(); }
         if (mod && (e.key === "y" || (e.key === "z" && e.shiftKey))) { e.preventDefault(); pb.redo(); }
